@@ -6,14 +6,8 @@
 name: CI
 
 on:
-  push:
-    branches:
-      - main
-      - master
-    tags:
-      - '*'
-  pull_request:
-  workflow_dispatch:
+  release:
+    types: [ published ]
 
 permissions:
   contents: read
@@ -32,10 +26,6 @@ jobs:
             target: aarch64
           - runner: ubuntu-22.04
             target: armv7
-          - runner: ubuntu-22.04
-            target: s390x
-          - runner: ubuntu-22.04
-            target: ppc64le
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -46,6 +36,20 @@ jobs:
         with:
           target: ${{ matrix.platform.target }}
           args: --release --out dist --find-interpreter
+          before-script-linux: |
+            # If we're running on rhel centos, install needed packages.
+            if command -v yum &> /dev/null; then
+                yum update -y && yum install -y perl-core openssl openssl-devel pkgconfig libatomic
+            
+                # If we're running on i686 we need to symlink libatomic
+                # in order to build openssl with -latomic flag.
+                if [[ ! -d "/usr/lib64" ]]; then
+                    ln -s /usr/lib/libatomic.so.1 /usr/lib/libatomic.so
+                fi
+            else
+                # If we're running on debian-based system.
+                apt update -y && apt-get install -y libssl-dev openssl pkg-config
+            fi
           sccache: ${{ !startsWith(github.ref, 'refs/tags/') }}
           manylinux: auto
       - name: Upload wheels
@@ -72,6 +76,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: 3.x
+      - name: Install OpenSSL
+        run: sudo apt-get update && sudo apt-get install libssl-dev openssl
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
@@ -157,7 +163,7 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     if: ${{ startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch' }}
-    needs: [linux, musllinux, windows, macos, sdist]
+    needs: [ linux, musllinux, windows, macos, sdist ]
     permissions:
       # Use to sign the release artifacts
       id-token: write
@@ -167,15 +173,32 @@ jobs:
       attestations: write
     steps:
       - uses: actions/download-artifact@v4
+
+      - name: Collect all wheels and sdist
+        run: |
+          mkdir -p dist
+          find . -name "*.whl" -exec cp {} dist/ \;
+          find . -name "*.tar.gz" -exec cp {} dist/ \;
+          ls -la dist/
+
       - name: Generate artifact attestation
         uses: actions/attest-build-provenance@v2
         with:
           subject-path: 'wheels-*/*'
-      - name: Publish to PyPI
-        if: ${{ startsWith(github.ref, 'refs/tags/') }}
-        uses: PyO3/maturin-action@v1
-        env:
-          MATURIN_PYPI_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          command: upload
-          args: --non-interactive --skip-existing wheels-*/*
+          python-version: '3.x'
+
+      - name: Install twine
+        run: pip install twine
+
+      - name: Upload to Private PyPI with twine
+        if: ${{ startsWith(github.ref, 'refs/tags/') }}
+        env:
+          TWINE_USERNAME: ${{ secrets.PRIVATE_PYPI_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.PRIVATE_PYPI_PASSWORD }}
+          TWINE_REPOSITORY_URL: ${{ secrets.PRIVATE_PYPI_URL }}
+        run: |
+          twine upload --repository-url $TWINE_REPOSITORY_URL dist/*
