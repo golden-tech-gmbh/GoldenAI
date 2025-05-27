@@ -40,7 +40,7 @@ pub struct TextContent {
 impl TextContent {
     #[new]
     fn new(text: &str) -> Self {
-        TextContent {
+        Self {
             content_type: "text".to_string(),
             text: text.to_string(),
         }
@@ -89,11 +89,11 @@ impl Content {
     #[new]
     fn new<'p>(content: Bound<'p, PyAny>) -> PyResult<Self> {
         if let Ok(text) = content.extract::<TextContent>() {
-            Ok(Content {
+            Ok(Self {
                 ctx: ContentTypeInner::Text(text),
             })
         } else if let Ok(doc) = content.extract::<DocumentContent>() {
-            Ok(Content {
+            Ok(Self {
                 ctx: ContentTypeInner::Document(doc),
             })
         } else {
@@ -103,7 +103,7 @@ impl Content {
 
     #[classmethod]
     fn from_text<'p>(_cls: Bound<'p, PyType>, text: &str) -> PyResult<Self> {
-        Ok(Content {
+        Ok(Self {
             ctx: ContentTypeInner::Text(TextContent {
                 content_type: "text".to_string(),
                 text: text.to_string(),
@@ -130,16 +130,16 @@ impl Content {
 #[derive(Serialize, Clone, Debug)]
 #[pyclass(dict, get_all, set_all, subclass)]
 pub struct Message {
-    pub(crate) role: String,
+    pub(crate) role: String, // "user"
     pub(crate) content: Vec<Content>,
 }
 
 #[pymethods]
 impl Message {
     #[new]
-    fn new(role: &str, content: Vec<Content>) -> Self {
-        Message {
-            role: role.to_string(),
+    fn new(content: Vec<Content>) -> Self {
+        Self {
+            role: "user".to_string(),
             content,
         }
     }
