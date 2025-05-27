@@ -61,6 +61,7 @@ mod tests {
                     ),
                 }],
             }],
+            system: Some("Please answer in Chinese".to_string()),
         };
         let response = request(request_body).await;
         match response {

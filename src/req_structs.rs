@@ -153,6 +153,7 @@ impl Message {
 #[pyclass(dict, get_all, set_all, subclass)]
 pub struct AnthropicRequest {
     pub(crate) model: String,
+    pub(crate) system: Option<String>,
     pub(crate) max_tokens: u32,
     pub(crate) messages: Vec<Message>,
 }
@@ -160,11 +161,13 @@ pub struct AnthropicRequest {
 #[pymethods]
 impl AnthropicRequest {
     #[new]
-    fn new(model: &str, max_tokens: u32, messages: Vec<Message>) -> Self {
-        AnthropicRequest {
+    #[pyo3(signature = (model, max_tokens,messages,prompt=None))]
+    fn new(model: &str, max_tokens: u32, messages: Vec<Message>, prompt: Option<&str>) -> Self {
+        Self {
             model: model.to_string(),
             max_tokens,
             messages,
+            system: prompt.map(|s| s.to_string()),
         }
     }
 
