@@ -19,7 +19,7 @@ impl ResponseContent {
 }
 
 #[derive(Deserialize, Debug)]
-#[pyclass(dict, get_all, set_all)]
+#[pyclass(dict, get_all, frozen)]
 pub(crate) struct AnthropicResponse {
     id: String,
     #[serde(rename = "type")]
@@ -63,5 +63,10 @@ impl AnthropicResponse {
             "AnthropicResponse<id={:?}, model={:?}>",
             self.id, self.model
         ))
+    }
+
+    fn __str__(&self) -> PyResult<String> {
+        let content: String = self.content.iter().map(|c| c.text.clone()).collect();
+        Ok(format!("{}", content))
     }
 }
