@@ -1,0 +1,23 @@
+[build-system]
+requires = ["maturin>=1.8,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "goldenai"
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Rust",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+]
+dynamic = ["version"]
+[tool.maturin]
+features = ["pyo3/extension-module"]
+
+[dependency-groups]
+dev = [
+    "maturin>=1.8.6",
+    "black>=25.1.0",
+    "ruff>=0.11.10",
+    "isort>=5.12.0",
+]
