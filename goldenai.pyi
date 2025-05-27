@@ -31,10 +31,10 @@ class TextContent:
 
 class Content:
     @classmethod
-    def from_text(cls: Type['Content'], text: str) -> 'Content': ...
+    def from_text(cls: Type["Content"], text: str) -> "Content": ...
 
     @classmethod
-    def from_document(cls: Type['Content'], *args: Any, **kwargs: Any) -> 'Content': ...
+    def from_document(cls: Type["Content"], *args: Any, **kwargs: Any) -> "Content": ...
 
     def __repr__(self) -> str: ...
 
@@ -53,7 +53,13 @@ class AnthropicRequest:
     max_tokens: int
     messages: List[Message]
 
-    def __init__(self, model: str, max_tokens: int, messages: List[Message], prompt: Optional[str] = None) -> None: ...
+    def __init__(
+            self,
+            model: str,
+            max_tokens: int,
+            messages: List[Message],
+            prompt: Optional[str] = None,
+    ) -> None: ...
 
     def __repr__(self) -> str: ...
 
@@ -83,5 +89,12 @@ class AnthropicResponse:
 
     def __repr__(self) -> str: ...
 
+    def __str__(self) -> str: ...
 
-def get_response(request_body: AnthropicRequest) -> AnthropicResponse: ...
+
+def send(request_body: AnthropicRequest) -> AnthropicResponse:
+    """
+    Send prepared AnthropicRequest
+    :param request_body: AnthropicRequest
+    :return: AnthropicResponse
+    """

@@ -4,13 +4,12 @@ mod res_structs;
 
 use pyo3::exceptions::PyException;
 use pyo3::prelude::*;
-use request::get_response as request;
+use request::get_response;
 
+/// Send prepared AnthropicRequest
 #[pyfunction]
-fn get_response(
-    request_body: req_structs::AnthropicRequest,
-) -> PyResult<res_structs::AnthropicResponse> {
-    match request(request_body) {
+fn send(request_body: req_structs::AnthropicRequest) -> PyResult<res_structs::AnthropicResponse> {
+    match get_response(request_body) {
         Ok(response) => Ok(response),
         Err(e) => Err(PyException::new_err(e.to_string())),
     }
@@ -25,6 +24,6 @@ fn goldenai(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<req_structs::DocumentContent>()?;
     m.add_class::<req_structs::DocumentSourceContent>()?;
     m.add_class::<req_structs::Content>()?;
-    m.add_function(wrap_pyfunction!(get_response, m)?)?;
+    m.add_function(wrap_pyfunction!(send, m)?)?;
     Ok(())
 }
