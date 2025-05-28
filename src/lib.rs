@@ -45,6 +45,7 @@ fn goldenai(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<req_structs::Content>()?;
     m.add_class::<req_structs::OpenAIRequest>()?;
     m.add_class::<LLM>()?;
+    m.add_class::<res_structs::LLMResponse>()?;
     m.add_function(wrap_pyfunction!(send, m)?)?;
     Ok(())
 }
