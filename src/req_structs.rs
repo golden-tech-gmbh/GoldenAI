@@ -1,3 +1,4 @@
+use crate::SupportedModels;
 use pyo3::exceptions::{PyException, PyTypeError};
 use pyo3::prelude::*;
 use pyo3::pyclass;
@@ -152,7 +153,7 @@ impl Message {
 #[derive(Serialize, Clone, Debug)]
 #[pyclass(dict, get_all, set_all, subclass)]
 pub struct AnthropicRequest {
-    pub(crate) model: String,
+    pub(crate) model: SupportedModels,
     pub(crate) system: Option<String>,
     pub(crate) max_tokens: u32,
     pub(crate) messages: Vec<Message>,
@@ -162,13 +163,18 @@ pub struct AnthropicRequest {
 impl AnthropicRequest {
     #[new]
     #[pyo3(signature = (model, max_tokens,messages,prompt=None))]
-    fn new(model: &str, max_tokens: u32, messages: Vec<Message>, prompt: Option<&str>) -> Self {
-        Self {
-            model: model.to_string(),
+    fn new(
+        model: &str,
+        max_tokens: u32,
+        messages: Vec<Message>,
+        prompt: Option<&str>,
+    ) -> PyResult<Self> {
+        Ok(Self {
+            model: SupportedModels::from_string(model).unwrap(),
             max_tokens,
             messages,
             system: prompt.map(|s| s.to_string()),
-        }
+        })
     }
 
     fn __repr__(&self) -> PyResult<String> {
@@ -179,7 +185,7 @@ impl AnthropicRequest {
 #[derive(Serialize, Clone, Debug)]
 #[pyclass(dict, get_all, set_all, subclass)]
 pub struct OpenAIRequest {
-    pub(crate) model: String,
+    pub(crate) model: SupportedModels,
     #[serde(skip)]
     pub(crate) system: Option<String>,
     pub(crate) max_tokens: u32,
@@ -192,7 +198,7 @@ impl OpenAIRequest {
     #[pyo3(signature = (model, max_tokens,messages,prompt=None))]
     pub fn new(model: &str, max_tokens: u32, messages: Vec<Message>, prompt: Option<&str>) -> Self {
         Self {
-            model: model.to_string(),
+            model: SupportedModels::from_string(model).unwrap(),
             max_tokens,
             messages: match prompt {
                 Some(p) => {

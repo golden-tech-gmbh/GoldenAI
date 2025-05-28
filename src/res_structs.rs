@@ -1,3 +1,6 @@
+use crate::SupportedModels;
+use anyhow::{Result, anyhow};
+use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
 use pyo3::pyclass;
 use serde::{Deserialize, Deserializer};
@@ -57,7 +60,7 @@ impl ResponseContent {
 #[pyclass(dict, get_all, frozen)]
 pub(crate) struct LLMResponse {
     id: String,
-    model: String,
+    model: SupportedModels,
     #[serde(rename = "type", alias = "object")]
     response_type: String,
 

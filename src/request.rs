@@ -85,11 +85,12 @@ async fn request_openai(request_body: OpenAIRequest) -> Result<LLMResponse> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::SupportedModels;
 
     #[tokio::test]
     async fn test_request_anthropic() {
         let request_body = AnthropicRequest {
-            model: "claude-3-5-haiku-latest".to_string(),
+            model: SupportedModels::from_string("claude-3-5-haiku-latest").unwrap(),
             max_tokens: 1024,
             messages: vec![crate::req_structs::Message {
                 role: "user".to_string(),
