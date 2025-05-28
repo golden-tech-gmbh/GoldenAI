@@ -2,17 +2,26 @@ use anyhow::{Result, anyhow};
 use reqwest;
 use std::env;
 
-use crate::req_structs::AnthropicRequest;
-use crate::res_structs::AnthropicResponse;
+use crate::req_structs::{AnthropicRequest, OpenAIRequest};
+use crate::res_structs::LLMResponse;
 
 #[tokio::main]
-pub async fn get_response(request_body: AnthropicRequest) -> Result<AnthropicResponse> {
-    request(request_body).await
+pub async fn get_response_anthropic(request_body: AnthropicRequest) -> Result<LLMResponse> {
+    request_anthropic(request_body).await
 }
 
-async fn request(request_body: AnthropicRequest) -> Result<AnthropicResponse> {
-    let api_key =
-        env::var("ANTHROPIC_API_KEY").expect("ANTHROPIC_API_KEY environment variable must be set");
+#[tokio::main]
+pub async fn get_response_openai(request_body: OpenAIRequest) -> Result<LLMResponse> {
+    request_openai(request_body).await
+}
+
+async fn request_anthropic(request_body: AnthropicRequest) -> Result<LLMResponse> {
+    let api_key = env::var("ANTHROPIC_API_KEY").unwrap_or("".to_string());
+    if api_key.is_empty() {
+        return Err(anyhow!(
+            "ANTHROPIC_API_KEY environment variable must be set"
+        ));
+    }
 
     let client = reqwest::Client::new();
     let response = client
@@ -27,8 +36,40 @@ async fn request(request_body: AnthropicRequest) -> Result<AnthropicResponse> {
     if response.status().is_success() {
         // let response_text = response.text().await?;
         // println!("Raw response: {}", response_text);
-        // let response: AnthropicResponse = serde_json::from_str(&response_text)?;
-        let response: AnthropicResponse = response.json().await?;
+        // let response: LLMResponse = serde_json::from_str(&response_text)?;
+        let response: LLMResponse = response.json().await?;
+        Ok(response)
+    } else {
+        let err_status = response.status();
+        let error_text = response.text().await?;
+        Err(anyhow!(
+            "Error: HTTP {}, Response: {}",
+            err_status,
+            error_text
+        ))
+    }
+}
+
+async fn request_openai(request_body: OpenAIRequest) -> Result<LLMResponse> {
+    let api_key = env::var("OPENAI_API_KEY").unwrap_or("".to_string());
+    if api_key.is_empty() {
+        return Err(anyhow!("OPENAI_API_KEY environment variable must be set"));
+    }
+
+    let client = reqwest::Client::new();
+    let response = client
+        .post("https://api.openai.com/v1/chat/completions")
+        .header("content-type", "application/json")
+        .header("Authorization", format!("Bearer {}", api_key))
+        .json(&request_body)
+        .send()
+        .await?;
+
+    if response.status().is_success() {
+        // let response_text = response.text().await?;
+        // println!("Raw response: {}", response_text);
+        // let response: LLMResponse = serde_json::from_str(&response_text)?;
+        let response: LLMResponse = response.json().await?;
         Ok(response)
     } else {
         let err_status = response.status();

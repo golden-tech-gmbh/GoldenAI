@@ -35,14 +35,17 @@ impl ResponseContent {
 
 #[derive(Deserialize, Debug)]
 #[pyclass(dict, get_all, frozen)]
-pub(crate) struct AnthropicResponse {
+pub(crate) struct LLMResponse {
     id: String,
-    #[serde(rename = "type")]
-    response_type: String,
-    role: String,
-    content: Vec<ResponseContent>,
     model: String,
-    stop_reason: Option<String>,
+    #[serde(rename = "type", alias = "object")]
+    response_type: String,
+
+    role: Option<String>,                  // Anthropic
+    content: Option<Vec<ResponseContent>>, // Anthropic
+
+    choices: Option<Vec<ResponseChoiceOpenAI>>, // OpenAI
+
     #[serde(deserialize_with = "deserialize_filtered_map")]
     usage: HashMap<String, u32>,
 }
@@ -72,7 +75,7 @@ where
 }
 
 #[pymethods]
-impl AnthropicResponse {
+impl LLMResponse {
     fn __repr__(&self) -> PyResult<String> {
         Ok(format!(
             "AnthropicResponse<id={:?}, model={:?}>",
@@ -81,7 +84,48 @@ impl AnthropicResponse {
     }
 
     fn __str__(&self) -> PyResult<String> {
-        let content: String = self.content.iter().map(|c| c.text.clone()).collect();
+        let content: String = match self.role {
+            Some(..) => {
+                // Anthropic response
+                let mut content = String::new();
+                for c in self.content.as_ref().unwrap() {
+                    content.push_str(&c.text);
+                }
+                content
+            }
+            None => {
+                // OpenAI response
+                let mut content = String::new();
+                for choice in self.choices.as_ref().unwrap() {
+                    content.push_str(&choice.message.content);
+                }
+                content
+            }
+        };
         Ok(format!("{}", content))
+    }
+}
+
+impl std::fmt::Display for LLMResponse {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let content: String = match self.role {
+            Some(..) => {
+                // Anthropic response
+                let mut content = String::new();
+                for c in self.content.as_ref().unwrap() {
+                    content.push_str(&c.text);
+                }
+                content
+            }
+            None => {
+                // OpenAI response
+                let mut content = String::new();
+                for choice in self.choices.as_ref().unwrap() {
+                    content.push_str(&choice.message.content);
+                }
+                content
+            }
+        };
+        write!(f, "{}", content)
     }
 }
