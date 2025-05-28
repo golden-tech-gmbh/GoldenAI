@@ -10,12 +10,32 @@ struct ResponseMsgOpenAI {
     content: String,
 }
 
+#[pymethods]
+impl ResponseMsgOpenAI {
+    fn __repr__(&self) -> PyResult<String> {
+        Ok(format!(
+            "ResponseMsgOpenAI<role={:?},content={:?}>",
+            self.role, self.content
+        ))
+    }
+}
+
 #[derive(Deserialize, Debug, Clone)]
 #[pyclass(dict, get_all, set_all)]
 struct ResponseChoiceOpenAI {
     index: u32,
     message: ResponseMsgOpenAI,
     finish_reason: Option<String>,
+}
+
+#[pymethods]
+impl ResponseChoiceOpenAI {
+    fn __repr__(&self) -> PyResult<String> {
+        Ok(format!(
+            "ResponseChoiceOpenAI<index={:?},message={:?},finish_reason={:?}>",
+            self.index, self.message, self.finish_reason
+        ))
+    }
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -43,6 +63,7 @@ pub(crate) struct LLMResponse {
 
     role: Option<String>,                  // Anthropic
     content: Option<Vec<ResponseContent>>, // Anthropic
+    stop_reason: Option<String>,           // Anthropic
 
     choices: Option<Vec<ResponseChoiceOpenAI>>, // OpenAI
 
