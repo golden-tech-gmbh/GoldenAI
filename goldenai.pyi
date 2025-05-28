@@ -124,10 +124,10 @@ class LLM:
     OpenAI: LLM
 
 
-def send(model: LLM, request_body: AnthropicRequest | OpenAIRequest) -> LLMResponse:
+def send(llm: LLM, request_body: AnthropicRequest | OpenAIRequest) -> LLMResponse:
     """
     Send prepared LLM Request
-    :param model: 
+    :param llm: llm to use, either LLM.Anthropic or LLM.OpenAI
     :param request_body: AnthropicRequest or OpenAIRequest
     :return: LLMResponse
     """

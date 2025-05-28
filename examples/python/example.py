@@ -18,7 +18,7 @@ def example_using_anthropic():
 
     # send the request
     # model should be one of LLM.Anthropic or LLM.OpenAI
-    res: LLMResponse = send(model=LLM.Anthropic, request_body=request)
+    res: LLMResponse = send(llm=LLM.Anthropic, request_body=request)
 
     print(res)
 
