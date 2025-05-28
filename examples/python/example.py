@@ -17,8 +17,8 @@ def example_using_anthropic():
                                prompt="Please answer in Chinese")
 
     # send the request
-    # model should be one of LLM.Anthropic or LLM.OpenAI
-    res: LLMResponse = send(llm=LLM.Anthropic, request_body=request)
+    # model should be one of LLM.Anthropic or LLM.OpenAI, default LLM.Anthropic
+    res: LLMResponse = send(request_body=request)
 
     print(res)
 
@@ -32,7 +32,7 @@ def example_using_openai():
     request = OpenAIRequest(model="gpt-4.1-nano-2025-04-14", max_tokens=1024, messages=[message],
                             prompt="Please answer in Chinese")
 
-    res = send(LLM.OpenAI, request)
+    res = send(request, llm=LLM.OpenAI)
 
     print(res)
 

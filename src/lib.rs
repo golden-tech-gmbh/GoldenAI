@@ -15,7 +15,8 @@ enum LLM {
 
 /// Send prepared AnthropicRequest
 #[pyfunction]
-fn send<'p>(llm: LLM, request_body: Bound<'p, PyAny>) -> PyResult<res_structs::LLMResponse> {
+#[pyo3(signature = (request_body,llm=LLM::Anthropic))]
+fn send<'p>(request_body: Bound<'p, PyAny>, llm: LLM) -> PyResult<res_structs::LLMResponse> {
     match llm {
         LLM::Anthropic => {
             let request_body = request_body.extract::<req_structs::AnthropicRequest>()?;
