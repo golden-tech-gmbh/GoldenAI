@@ -5,6 +5,21 @@ use std::collections::HashMap;
 
 #[derive(Deserialize, Debug, Clone)]
 #[pyclass(dict, get_all, set_all)]
+struct ResponseMsgOpenAI {
+    role: String,
+    content: String,
+}
+
+#[derive(Deserialize, Debug, Clone)]
+#[pyclass(dict, get_all, set_all)]
+struct ResponseChoiceOpenAI {
+    index: u32,
+    message: ResponseMsgOpenAI,
+    finish_reason: Option<String>,
+}
+
+#[derive(Deserialize, Debug, Clone)]
+#[pyclass(dict, get_all, set_all)]
 struct ResponseContent {
     #[serde(rename = "type")]
     content_type: String,
