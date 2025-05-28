@@ -102,7 +102,7 @@ impl Content {
     }
 
     #[classmethod]
-    fn from_text<'p>(_cls: Bound<'p, PyType>, text: &str) -> PyResult<Self> {
+    fn from_text(_cls: Bound<'_, PyType>, text: &str) -> PyResult<Self> {
         Ok(Self {
             ctx: ContentTypeInner::Text(TextContent {
                 content_type: "text".to_string(),
