@@ -15,12 +15,7 @@ enum LLM {
 
 /// Send prepared AnthropicRequest
 #[pyfunction]
-fn send<'p>(
-    llm: Bound<'p, PyAny>,
-    request_body: Bound<'p, PyAny>,
-) -> PyResult<res_structs::LLMResponse> {
-    let llm = llm.extract::<LLM>()?;
-
+fn send<'p>(llm: LLM, request_body: Bound<'p, PyAny>) -> PyResult<res_structs::LLMResponse> {
     match llm {
         LLM::Anthropic => {
             let request_body = request_body.extract::<req_structs::AnthropicRequest>()?;
@@ -49,6 +44,7 @@ fn goldenai(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<req_structs::DocumentSourceContent>()?;
     m.add_class::<req_structs::Content>()?;
     m.add_class::<req_structs::OpenAIRequest>()?;
+    m.add_class::<LLM>()?;
     m.add_function(wrap_pyfunction!(send, m)?)?;
     Ok(())
 }
