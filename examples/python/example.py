@@ -21,6 +21,7 @@ def example_using_anthropic():
     res: LLMResponse = send(request_body=request)
 
     print(res)
+    print(res.cost())
 
 
 def example_using_openai():
@@ -35,6 +36,7 @@ def example_using_openai():
     res = send(request, llm=LLM.OpenAI)
 
     print(res)
+    print(res.cost())
 
 
 if __name__ == "__main__":

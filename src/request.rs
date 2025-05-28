@@ -107,7 +107,10 @@ mod tests {
         };
         let response = request_anthropic(request_body).await;
         match response {
-            Ok(res) => println!("{}", res),
+            Ok(res) => {
+                println!("{}", res);
+                println!("{:?}", res.cost_test().unwrap());
+            }
             Err(e) => println!("Error: {}", e),
         }
     }
@@ -135,7 +138,10 @@ mod tests {
         );
         let response = request_openai(request_body).await;
         match response {
-            Ok(res) => println!("{}", res),
+            Ok(res) => {
+                println!("{}", res);
+                println!("{:?}", res.cost_test().unwrap());
+            }
             Err(e) => println!("Error: {}", e),
         }
     }
