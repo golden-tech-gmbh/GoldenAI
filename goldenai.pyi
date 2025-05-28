@@ -1,4 +1,4 @@
-from typing import Any, List, Optional, Type
+from typing import Any, List, Type, Dict
 
 
 class DocumentSourceContent:
@@ -58,7 +58,23 @@ class AnthropicRequest:
             model: str,
             max_tokens: int,
             messages: List[Message],
-            prompt: Optional[str] = None,
+            prompt: str | None = None,
+    ) -> None: ...
+
+    def __repr__(self) -> str: ...
+
+
+class OpenAIRequest:
+    model: str
+    max_tokens: int
+    messages: List[Message]
+
+    def __init__(
+            self,
+            model: str,
+            max_tokens: int,
+            messages: List[Message],
+            prompt: str | None = None,
     ) -> None: ...
 
     def __repr__(self) -> str: ...
@@ -71,30 +87,47 @@ class ResponseContent:
     def __repr__(self) -> str: ...
 
 
-class Usage:
-    input_tokens: int
-    output_tokens: int
+class ResponseMsgOpenAI:
+    role: str
+    content: str
 
     def __repr__(self) -> str: ...
 
 
-class AnthropicResponse:
+class ResponseChoiceOpenAI:
+    index: int
+    message: ResponseMsgOpenAI
+    finish_reason: str | None
+
+    def __repr__(self) -> str: ...
+
+
+class LLMResponse:
     id: str
-    response_type: str
-    role: str
-    content: List[ResponseContent]
     model: str
-    stop_reason: Optional[str]
-    usage: Usage
+    response_type: str
+    role: str | None
+    content: List[ResponseContent] | None
+    choices: List[ResponseChoiceOpenAI] | None
+    stop_reason: str | None
+    usage: Dict[str, int]
 
     def __repr__(self) -> str: ...
 
     def __str__(self) -> str: ...
 
 
-def send(request_body: AnthropicRequest) -> AnthropicResponse:
+class LLM:
+    def __init__(self) -> None: ...
+
+    Anthropic: LLM
+    OpenAI: LLM
+
+
+def send(model: LLM, request_body: AnthropicRequest | OpenAIRequest) -> LLMResponse:
     """
-    Send prepared AnthropicRequest
-    :param request_body: AnthropicRequest
-    :return: AnthropicResponse
+    Send prepared LLM Request
+    :param model: 
+    :param request_body: AnthropicRequest or OpenAIRequest
+    :return: LLMResponse
     """
