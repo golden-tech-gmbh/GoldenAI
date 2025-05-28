@@ -87,7 +87,7 @@ mod tests {
     use super::*;
 
     #[tokio::test]
-    async fn test_request() {
+    async fn test_request_anthropic() {
         let request_body = AnthropicRequest {
             model: "claude-3-5-haiku-latest".to_string(),
             max_tokens: 1024,
@@ -104,9 +104,37 @@ mod tests {
             }],
             system: Some("Please answer in Chinese".to_string()),
         };
-        let response = request(request_body).await;
+        let response = request_anthropic(request_body).await;
         match response {
-            Ok(res) => println!("{:?}", res),
+            Ok(res) => println!("{}", res),
+            Err(e) => println!("Error: {}", e),
+        }
+    }
+
+    #[tokio::test]
+    async fn test_request_openai() {
+        // for testing OpenAI, please always construct a request with new()
+        // this will ensure the prompt is built correctly with messages
+        // in Anthropic, the prompt is built alongside the messages, so this is not necessary
+        let request_body = OpenAIRequest::new(
+            "gpt-4.1-nano-2025-04-14",
+            1024,
+            vec![crate::req_structs::Message {
+                role: "user".to_string(),
+                content: vec![crate::req_structs::Content {
+                    ctx: crate::req_structs::ContentTypeInner::Text(
+                        crate::req_structs::TextContent {
+                            content_type: "text".to_string(),
+                            text: "Hello, Claude!".to_string(),
+                        },
+                    ),
+                }],
+            }],
+            Some("Please answer in Chinese"),
+        );
+        let response = request_openai(request_body).await;
+        match response {
+            Ok(res) => println!("{}", res),
             Err(e) => println!("Error: {}", e),
         }
     }
