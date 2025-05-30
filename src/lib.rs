@@ -5,7 +5,7 @@ mod res_structs;
 use anyhow::{Result, anyhow};
 use pyo3::exceptions::PyException;
 use pyo3::prelude::*;
-use request::{get_response_anthropic, get_response_openai};
+use request::{get_count_tokens_anthropic, get_response_anthropic, get_response_openai};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 #[pyclass(eq, eq_int)]
@@ -81,6 +81,28 @@ fn send<'p>(request_body: Bound<'p, PyAny>, llm: LLM) -> PyResult<res_structs::L
     }
 }
 
+#[pyfunction]
+#[pyo3(signature = (request_body,llm=LLM::Anthropic))]
+fn count_tokens<'p>(request_body: Bound<'p, PyAny>, llm: LLM) -> PyResult<u32> {
+    match llm {
+        LLM::Anthropic => {
+            let request_body = request_body.extract::<req_structs::AnthropicRequest>()?;
+            match get_count_tokens_anthropic(request_body) {
+                Ok(counts) => Ok(counts),
+                Err(e) => Err(PyException::new_err(e.to_string())),
+            }
+        }
+        LLM::OpenAI => {
+            todo!();
+            // let request_body = request_body.extract::<req_structs::OpenAIRequest>()?;
+            // match get_count_tokens_anthropic(request_body) {
+            //     Ok(counts) => Ok(counts),
+            //     Err(e) => Err(PyException::new_err(e.to_string())),
+            // }
+        }
+    }
+}
+
 /// A Python module implemented in Rust.
 #[pymodule]
 fn goldenai(m: &Bound<'_, PyModule>) -> PyResult<()> {
@@ -94,5 +116,6 @@ fn goldenai(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<LLM>()?;
     m.add_class::<res_structs::LLMResponse>()?;
     m.add_function(wrap_pyfunction!(send, m)?)?;
+    m.add_function(wrap_pyfunction!(count_tokens, m)?)?;
     Ok(())
 }

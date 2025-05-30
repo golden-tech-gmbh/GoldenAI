@@ -1,5 +1,5 @@
 def example_using_anthropic():
-    from goldenai import Content, Message, AnthropicRequest, LLM, send, LLMResponse
+    from goldenai import Content, Message, AnthropicRequest, send, LLMResponse, count_tokens
 
     # generate a content object
     # alternatively, you can also:
@@ -15,6 +15,9 @@ def example_using_anthropic():
     # contruct a request
     request = AnthropicRequest(model="claude-3-5-haiku-latest", max_tokens=1024, messages=[message],
                                prompt="Please answer in Chinese")
+
+    # count the tokens
+    print(count_tokens(request))
 
     # send the request
     # model should be one of LLM.Anthropic or LLM.OpenAI, default LLM.Anthropic

@@ -133,3 +133,12 @@ def send(request_body: AnthropicRequest | OpenAIRequest, llm: LLM = LLM.Anthropi
     :param request_body: AnthropicRequest or OpenAIRequest
     :return: LLMResponse
     """
+
+
+def count_tokens(request_body: AnthropicRequest | OpenAIRequest, llm: LLM = LLM.Anthropic) -> int:
+    """
+    Count tokens
+    :param llm: llm to use, either LLM.Anthropic or LLM.OpenAI, default LLM.Anthropic
+    :param request_body: AnthropicRequest or OpenAIRequest
+    :return: int
+    """

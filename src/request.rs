@@ -1,9 +1,10 @@
+use crate::SupportedModels;
+use crate::req_structs::{AnthropicRequest, Message, OpenAIRequest};
+use crate::res_structs::LLMResponse;
 use anyhow::{Result, anyhow};
 use reqwest;
+use serde::{Deserialize, Serialize};
 use std::env;
-
-use crate::req_structs::{AnthropicRequest, OpenAIRequest};
-use crate::res_structs::LLMResponse;
 
 #[tokio::main]
 pub async fn get_response_anthropic(request_body: AnthropicRequest) -> Result<LLMResponse> {
@@ -13,6 +14,11 @@ pub async fn get_response_anthropic(request_body: AnthropicRequest) -> Result<LL
 #[tokio::main]
 pub async fn get_response_openai(request_body: OpenAIRequest) -> Result<LLMResponse> {
     request_openai(request_body).await
+}
+
+#[tokio::main]
+pub async fn get_count_tokens_anthropic(request_body: AnthropicRequest) -> Result<u32> {
+    count_tokens_anthropic(request_body).await
 }
 
 async fn request_anthropic(request_body: AnthropicRequest) -> Result<LLMResponse> {
@@ -82,6 +88,54 @@ async fn request_openai(request_body: OpenAIRequest) -> Result<LLMResponse> {
     }
 }
 
+async fn count_tokens_anthropic(request_body: AnthropicRequest) -> Result<u32> {
+    let api_key = env::var("ANTHROPIC_API_KEY").unwrap_or("".to_string());
+    if api_key.is_empty() {
+        return Err(anyhow!(
+            "ANTHROPIC_API_KEY environment variable must be set"
+        ));
+    }
+
+    #[derive(Serialize, Debug)]
+    struct CountTokensRequest {
+        model: SupportedModels,
+        messages: Vec<Message>,
+    }
+
+    let client = reqwest::Client::new();
+    let response = client
+        .post("https://api.anthropic.com/v1/messages/count_tokens")
+        .header("x-api-key", api_key)
+        .header("anthropic-version", "2023-06-01")
+        .header("content-type", "application/json")
+        .json(&CountTokensRequest {
+            model: request_body.model,
+            messages: request_body.messages,
+        })
+        .send()
+        .await?;
+
+    if response.status().is_success() {
+        #[derive(Deserialize, Debug)]
+        struct CountTokensResponse {
+            input_tokens: u32,
+        }
+        // let response_text = response.text().await?;
+        // println!("Raw response: {}", response_text);
+        // let response: LLMResponse = serde_json::from_str(&response_text)?;
+        let response: CountTokensResponse = response.json().await?;
+        Ok(response.input_tokens)
+    } else {
+        let err_status = response.status();
+        let error_text = response.text().await?;
+        Err(anyhow!(
+            "Error: HTTP {}, Response: {}",
+            err_status,
+            error_text
+        ))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -105,6 +159,9 @@ mod tests {
             }],
             system: Some("Please answer in Chinese".to_string()),
         };
+        let input_tokens = count_tokens_anthropic(request_body.clone()).await.unwrap();
+        println!("Input tokens: {}", input_tokens);
+
         let response = request_anthropic(request_body).await;
         match response {
             Ok(res) => {
