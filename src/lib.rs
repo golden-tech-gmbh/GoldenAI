@@ -13,13 +13,6 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 #[pyclass(eq, eq_int)]
 #[derive(PartialEq, Clone, Debug)]
-enum LLM {
-    Anthropic,
-    OpenAI,
-}
-
-#[pyclass(eq, eq_int)]
-#[derive(PartialEq, Clone, Debug)]
 enum SupportedModels {
     GPT41Nano20250414,
     Claude35HaikuLatest,
@@ -64,30 +57,32 @@ impl SupportedModels {
 
 /// Send prepared AnthropicRequest
 #[pyfunction]
-#[pyo3(signature = (request_body,llm=LLM::Anthropic))]
-fn send<'p>(request_body: Bound<'p, PyAny>, llm: LLM) -> PyResult<res_structs::LLMResponse> {
-    match llm {
-        LLM::Anthropic => {
-            let request_body = request_body.extract::<req_structs::AnthropicRequest>()?;
-            match get_response_anthropic(request_body) {
-                Ok(response) => Ok(response),
-                Err(e) => Err(PyException::new_err(e.to_string())),
-            }
+fn send<'p>(request_body: Bound<'p, PyAny>) -> PyResult<res_structs::LLMResponse> {
+    if let Ok(anthropic_req) = request_body.extract::<req_structs::AnthropicRequest>() {
+        match get_response_anthropic(anthropic_req) {
+            Ok(response) => Ok(response),
+            Err(e) => Err(PyException::new_err(e.to_string())),
         }
-        LLM::OpenAI => {
-            let request_body = request_body.extract::<req_structs::OpenAIRequest>()?;
-            match get_response_openai(request_body) {
-                Ok(response) => Ok(response),
-                Err(e) => Err(PyException::new_err(e.to_string())),
-            }
+    } else if let Ok(openai_req) = request_body.extract::<req_structs::OpenAIRequest>() {
+        match get_response_openai(openai_req) {
+            Ok(response) => Ok(response),
+            Err(e) => Err(PyException::new_err(e.to_string())),
         }
+    } else {
+        Err(PyException::new_err("Invalid request body"))
     }
 }
 
 #[pyfunction]
 fn count_tokens<'p>(request_body: Bound<'p, PyAny>) -> PyResult<u32> {
     if let Ok(anthropic_req) = request_body.extract::<req_structs::AnthropicRequest>() {
-        get_count_tokens_anthropic(anthropic_req).map_err(|e| PyException::new_err(e.to_string()))
+        // TODO! still using match instead of map,
+        // TODO! to avoid RustRover IDE error hint due to Async type missmatch
+        // TODO! but chain with map_err() is working without async (it actually have to do without it)
+        match get_count_tokens_anthropic(anthropic_req) {
+            Ok(tokens) => Ok(tokens),
+            Err(e) => Err(PyException::new_err(e.to_string())),
+        }
     } else if let Ok(openai_req) = request_body.extract::<req_structs::OpenAIRequest>() {
         get_count_tokens_openai(openai_req).map_err(|e| PyException::new_err(e.to_string()))
     } else {
@@ -105,7 +100,6 @@ fn goldenai(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<req_structs::DocumentSourceContent>()?;
     m.add_class::<req_structs::Content>()?;
     m.add_class::<req_structs::OpenAIRequest>()?;
-    m.add_class::<LLM>()?;
     m.add_class::<res_structs::LLMResponse>()?;
     m.add_function(wrap_pyfunction!(send, m)?)?;
     m.add_function(wrap_pyfunction!(count_tokens, m)?)?;

@@ -119,13 +119,6 @@ class LLMResponse:
     def cost(self) -> float: ...
 
 
-class LLM:
-    def __init__(self) -> None: ...
-
-    Anthropic: LLM
-    OpenAI: LLM
-
-
 def send(request_body: AnthropicRequest | OpenAIRequest, llm: LLM = LLM.Anthropic) -> LLMResponse:
     """
     Send prepared LLM Request

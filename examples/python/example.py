@@ -28,7 +28,7 @@ def example_using_anthropic():
 
 
 def example_using_openai():
-    from goldenai import Content, Message, OpenAIRequest, LLM, send, count_tokens
+    from goldenai import Content, Message, OpenAIRequest, send, count_tokens
 
     content = Content.from_text("Hello, Claude!")
     content2 = Content.from_text("What is the day today?")
@@ -38,7 +38,7 @@ def example_using_openai():
 
     print(count_tokens(request))
 
-    res = send(request, llm=LLM.OpenAI)
+    res = send(request)
 
     print(res)
     print(res.cost())
