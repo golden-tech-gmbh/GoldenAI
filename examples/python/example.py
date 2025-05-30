@@ -28,13 +28,15 @@ def example_using_anthropic():
 
 
 def example_using_openai():
-    from goldenai import Content, Message, OpenAIRequest, LLM, send
+    from goldenai import Content, Message, OpenAIRequest, LLM, send, count_tokens
 
     content = Content.from_text("Hello, Claude!")
     content2 = Content.from_text("What is the day today?")
     message = Message(content=[content, content2])
     request = OpenAIRequest(model="gpt-4.1-nano-2025-04-14", max_tokens=1024, messages=[message],
                             prompt="Please answer in Chinese")
+
+    print(count_tokens(request))
 
     res = send(request, llm=LLM.OpenAI)
 

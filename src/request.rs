@@ -5,6 +5,7 @@ use anyhow::{Result, anyhow};
 use reqwest;
 use serde::{Deserialize, Serialize};
 use std::env;
+use tiktoken_rs::{ChatCompletionRequestMessage, num_tokens_from_messages};
 
 #[tokio::main]
 pub async fn get_response_anthropic(request_body: AnthropicRequest) -> Result<LLMResponse> {
@@ -19,6 +20,10 @@ pub async fn get_response_openai(request_body: OpenAIRequest) -> Result<LLMRespo
 #[tokio::main]
 pub async fn get_count_tokens_anthropic(request_body: AnthropicRequest) -> Result<u32> {
     count_tokens_anthropic(request_body).await
+}
+
+pub fn get_count_tokens_openai(request_body: OpenAIRequest) -> Result<u32> {
+    count_tokens_openai(request_body)
 }
 
 async fn request_anthropic(request_body: AnthropicRequest) -> Result<LLMResponse> {
@@ -136,6 +141,36 @@ async fn count_tokens_anthropic(request_body: AnthropicRequest) -> Result<u32> {
     }
 }
 
+fn count_tokens_openai(request_body: OpenAIRequest) -> Result<u32> {
+    let api_key = env::var("OPENAI_API_KEY").unwrap_or("".to_string());
+    if api_key.is_empty() {
+        return Err(anyhow!("OPENAI_API_KEY environment variable must be set"));
+    }
+
+    let mut messages: Vec<ChatCompletionRequestMessage> = Vec::new();
+
+    for each_message in request_body.messages.iter() {
+        let message = ChatCompletionRequestMessage {
+            role: each_message.role.clone(),
+            content: each_message
+                .content
+                .iter()
+                .map(|content| match &content.ctx {
+                    ContentTypeInner::Text(text) => Some(text.text.clone()),
+                    _ => panic!("Invalid content type"),
+                })
+                .collect(),
+            name: None,
+            function_call: None,
+        };
+        messages.push(message);
+    }
+
+    let max_tokens = num_tokens_from_messages(request_body.model.to_string(), &messages)?;
+
+    Ok(max_tokens as u32)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -189,6 +224,10 @@ mod tests {
             }],
             Some("Please answer in Chinese"),
         );
+
+        let input_tokens = count_tokens_openai(request_body.clone()).unwrap();
+        println!("Input tokens: {}", input_tokens);
+
         let response = request_openai(request_body).await;
         match response {
             Ok(res) => {
