@@ -131,7 +131,7 @@ impl Content {
 #[derive(Serialize, Clone, Debug)]
 #[pyclass(dict, get_all, set_all, subclass)]
 pub struct Message {
-    pub(crate) role: String, // "user"
+    pub(crate) role: String,
     pub(crate) content: Vec<Content>,
 }
 

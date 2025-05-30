@@ -1,5 +1,5 @@
 use crate::SupportedModels;
-use crate::req_structs::{AnthropicRequest, Message, OpenAIRequest};
+use crate::req_structs::{AnthropicRequest, ContentTypeInner, Message, OpenAIRequest};
 use crate::res_structs::LLMResponse;
 use anyhow::{Result, anyhow};
 use reqwest;
@@ -146,15 +146,13 @@ mod tests {
         let request_body = AnthropicRequest {
             model: SupportedModels::from_string("claude-3-5-haiku-latest").unwrap(),
             max_tokens: 1024,
-            messages: vec![crate::req_structs::Message {
+            messages: vec![Message {
                 role: "user".to_string(),
                 content: vec![crate::req_structs::Content {
-                    ctx: crate::req_structs::ContentTypeInner::Text(
-                        crate::req_structs::TextContent {
-                            content_type: "text".to_string(),
-                            text: "Hello, Claude!".to_string(),
-                        },
-                    ),
+                    ctx: ContentTypeInner::Text(crate::req_structs::TextContent {
+                        content_type: "text".to_string(),
+                        text: "Hello, Claude!".to_string(),
+                    }),
                 }],
             }],
             system: Some("Please answer in Chinese".to_string()),
@@ -180,15 +178,13 @@ mod tests {
         let request_body = OpenAIRequest::new(
             "gpt-4.1-nano-2025-04-14",
             1024,
-            vec![crate::req_structs::Message {
+            vec![Message {
                 role: "user".to_string(),
                 content: vec![crate::req_structs::Content {
-                    ctx: crate::req_structs::ContentTypeInner::Text(
-                        crate::req_structs::TextContent {
-                            content_type: "text".to_string(),
-                            text: "Hello, Claude!".to_string(),
-                        },
-                    ),
+                    ctx: ContentTypeInner::Text(crate::req_structs::TextContent {
+                        content_type: "text".to_string(),
+                        text: "Hello, Claude!".to_string(),
+                    }),
                 }],
             }],
             Some("Please answer in Chinese"),
