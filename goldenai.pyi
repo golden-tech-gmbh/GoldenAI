@@ -119,19 +119,17 @@ class LLMResponse:
     def cost(self) -> float: ...
 
 
-def send(request_body: AnthropicRequest | OpenAIRequest, llm: LLM = LLM.Anthropic) -> LLMResponse:
+def send(request_body: AnthropicRequest | OpenAIRequest) -> LLMResponse:
     """
     Send prepared LLM Request
-    :param llm: llm to use, either LLM.Anthropic or LLM.OpenAI, default LLM.Anthropic
     :param request_body: AnthropicRequest or OpenAIRequest
     :return: LLMResponse
     """
 
 
-def count_tokens(request_body: AnthropicRequest | OpenAIRequest, llm: LLM = LLM.Anthropic) -> int:
+def count_tokens(request_body: AnthropicRequest | OpenAIRequest) -> int:
     """
     Count tokens
-    :param llm: llm to use, either LLM.Anthropic or LLM.OpenAI, default LLM.Anthropic
     :param request_body: AnthropicRequest or OpenAIRequest
     :return: int
     """
