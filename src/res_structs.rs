@@ -7,9 +7,9 @@ use serde::Deserialize;
 
 #[derive(Deserialize, Debug, Clone)]
 #[pyclass(dict, get_all, set_all)]
-struct ResponseMsgOpenAI {
-    role: String,
-    content: String,
+pub struct ResponseMsgOpenAI {
+    pub role: String,
+    pub content: String,
 }
 
 #[pymethods]
@@ -24,10 +24,10 @@ impl ResponseMsgOpenAI {
 
 #[derive(Deserialize, Debug, Clone)]
 #[pyclass(dict, get_all, set_all)]
-struct ResponseChoiceOpenAI {
-    index: u32,
-    message: ResponseMsgOpenAI,
-    finish_reason: Option<String>,
+pub struct ResponseChoiceOpenAI {
+    pub index: u32,
+    pub message: ResponseMsgOpenAI,
+    pub finish_reason: Option<String>,
 }
 
 #[pymethods]
@@ -42,10 +42,10 @@ impl ResponseChoiceOpenAI {
 
 #[derive(Deserialize, Debug, Clone)]
 #[pyclass(dict, get_all, set_all)]
-struct ResponseContent {
+pub struct ResponseContent {
     #[serde(rename = "type")]
-    content_type: String,
-    text: String,
+    pub content_type: String,
+    pub text: String,
 }
 
 #[pymethods]
@@ -57,11 +57,11 @@ impl ResponseContent {
 
 #[derive(Deserialize, Debug, Clone)]
 #[pyclass(dict, get_all, set_all)]
-struct Usage {
+pub struct Usage {
     #[serde(alias = "prompt_tokens")]
-    input_tokens: u32,
+    pub input_tokens: u32,
     #[serde(alias = "completion_tokens")]
-    output_tokens: u32,
+    pub output_tokens: u32,
 }
 
 #[pymethods]
@@ -77,17 +77,17 @@ impl Usage {
 #[derive(Deserialize, Debug)]
 #[pyclass(dict, get_all, frozen)]
 pub(crate) struct LLMResponse {
-    id: String,
-    model: SupportedModels,
+    pub id: String,
+    pub model: SupportedModels,
     #[serde(rename = "type", alias = "object")]
-    response_type: String,
-    usage: Usage,
+    pub response_type: String,
+    pub usage: Usage,
 
-    role: Option<String>,                  // Anthropic
-    content: Option<Vec<ResponseContent>>, // Anthropic
-    stop_reason: Option<String>,           // Anthropic
+    pub role: Option<String>,                  // Anthropic
+    pub content: Option<Vec<ResponseContent>>, // Anthropic
+    pub stop_reason: Option<String>,           // Anthropic
 
-    choices: Option<Vec<ResponseChoiceOpenAI>>, // OpenAI
+    pub choices: Option<Vec<ResponseChoiceOpenAI>>, // OpenAI
 }
 
 #[pymethods]
