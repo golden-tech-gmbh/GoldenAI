@@ -47,10 +47,10 @@ def example_using_openai():
 def example_using_ollama():
     from goldenai import Content, Message, OllamaRequest, send
 
-    content = Content.from_text("Hello, Claude!")
-    content2 = Content.from_text("What is the day today?")
-    message = Message(content=[content, content2])
-    request = OllamaRequest(url="http://10.8.0.1:11434", model="qwen2.5vl:latest", messages=[message], prompt=None)
+    content = Content.from_text("What is your name?")
+    message = Message(content=[content])
+    request = OllamaRequest(url="http://10.8.0.1:11434", model="qwen2.5vl:latest", messages=[message],
+                            prompt="Please translate my message to Ukrainian")
 
     res = send(request)
 
