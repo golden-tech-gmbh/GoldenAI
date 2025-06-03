@@ -82,6 +82,23 @@ class OpenAIRequest:
     def __repr__(self) -> str: ...
 
 
+class OllamaRequest:
+    url: str
+    model: str
+    messages: List[Message]
+    prompt: str | None
+
+    def __init__(
+            self,
+            url: str,
+            model: str,
+            messages: List[Message],
+            prompt: str | None = None,
+    ) -> None: ...
+
+    def __repr__(self) -> str: ...
+
+
 class ResponseContent:
     content_type: str
     text: str
@@ -121,10 +138,10 @@ class LLMResponse:
     def cost(self) -> float: ...
 
 
-def send(request_body: AnthropicRequest | OpenAIRequest) -> LLMResponse:
+def send(request_body: AnthropicRequest | OpenAIRequest | OllamaRequest) -> LLMResponse:
     """
     Send prepared LLM Request
-    :param request_body: AnthropicRequest or OpenAIRequest
+    :param request_body: AnthropicRequest or OpenAIRequest or OllamaRequest
     :return: LLMResponse
     """
 

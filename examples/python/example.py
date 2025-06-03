@@ -44,6 +44,20 @@ def example_using_openai():
     print(res.cost())
 
 
+def example_using_ollama():
+    from goldenai import Content, Message, OllamaRequest, send
+
+    content = Content.from_text("Hello, Claude!")
+    content2 = Content.from_text("What is the day today?")
+    message = Message(content=[content, content2])
+    request = OllamaRequest(url="http://10.8.0.1:11434", model="qwen2.5vl:latest", messages=[message], prompt=None)
+
+    res = send(request)
+
+    print(res)
+
+
 if __name__ == "__main__":
     example_using_anthropic()
     example_using_openai()
+    example_using_ollama()
