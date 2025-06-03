@@ -52,6 +52,7 @@ class AnthropicRequest:
     model: str
     max_tokens: int
     messages: List[Message]
+    prompt: str | None
 
     def __init__(
             self,
@@ -68,6 +69,7 @@ class OpenAIRequest:
     model: str
     max_tokens: int
     messages: List[Message]
+    prompt: str | None
 
     def __init__(
             self,
