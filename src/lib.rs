@@ -1,8 +1,10 @@
+mod ollama;
 mod req_structs;
 mod request;
 mod res_structs;
 
 use anyhow::{Result, anyhow};
+use ollama::{OllamaRequest, get_response_ollama};
 use pyo3::exceptions::PyException;
 use pyo3::prelude::*;
 use request::{
@@ -16,6 +18,7 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 enum SupportedModels {
     GPT41Nano20250414,
     Claude35HaikuLatest,
+    Qwen25VL,
 }
 
 impl Serialize for SupportedModels {
@@ -42,6 +45,7 @@ impl SupportedModels {
         match self {
             SupportedModels::GPT41Nano20250414 => "gpt-4.1-nano-2025-04-14",
             SupportedModels::Claude35HaikuLatest => "claude-3-5-haiku-latest",
+            SupportedModels::Qwen25VL => "qwen2.5vl:latest",
         }
     }
 
@@ -50,6 +54,9 @@ impl SupportedModels {
             "gpt-4.1-nano-2025-04-14" => Ok(SupportedModels::GPT41Nano20250414),
             "claude-3-5-haiku-latest" => Ok(SupportedModels::Claude35HaikuLatest),
             "claude-3-5-haiku-20241022" => Ok(SupportedModels::Claude35HaikuLatest),
+            "qwen2.5vl:latest" => Ok(SupportedModels::Qwen25VL),
+            "qwen2.5vl:7b" => Ok(SupportedModels::Qwen25VL),
+            "qwen2.5vl" => Ok(SupportedModels::Qwen25VL),
             _ => Err(anyhow!("Unsupported model: {}", model)),
         }
     }
@@ -65,6 +72,11 @@ fn send<'p>(request_body: Bound<'p, PyAny>) -> PyResult<res_structs::LLMResponse
         }
     } else if let Ok(openai_req) = request_body.extract::<req_structs::OpenAIRequest>() {
         match get_response_openai(openai_req) {
+            Ok(response) => Ok(response),
+            Err(e) => Err(PyException::new_err(e.to_string())),
+        }
+    } else if let Ok(ollama_req) = request_body.extract::<OllamaRequest>() {
+        match get_response_ollama(ollama_req) {
             Ok(response) => Ok(response),
             Err(e) => Err(PyException::new_err(e.to_string())),
         }
@@ -85,6 +97,8 @@ fn count_tokens<'p>(request_body: Bound<'p, PyAny>) -> PyResult<u32> {
         }
     } else if let Ok(openai_req) = request_body.extract::<req_structs::OpenAIRequest>() {
         get_count_tokens_openai(openai_req).map_err(|e| PyException::new_err(e.to_string()))
+    } else if let Ok(_ollama_req) = request_body.extract::<OllamaRequest>() {
+        Ok(0u32) // TODO! Ollama is not necessary to count tokens for now
     } else {
         Err(PyException::new_err("Invalid request body"))
     }
@@ -101,6 +115,7 @@ fn goldenai(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<req_structs::Content>()?;
     m.add_class::<req_structs::OpenAIRequest>()?;
     m.add_class::<res_structs::LLMResponse>()?;
+    m.add_class::<OllamaRequest>()?;
     m.add_function(wrap_pyfunction!(send, m)?)?;
     m.add_function(wrap_pyfunction!(count_tokens, m)?)?;
     Ok(())
