@@ -23,7 +23,7 @@ impl Serialize for SupportedModels {
     where
         S: Serializer,
     {
-        serializer.serialize_str(self.to_string())
+        serializer.serialize_str(self.to_str())
     }
 }
 
@@ -33,19 +33,19 @@ impl<'de> Deserialize<'de> for SupportedModels {
         D: Deserializer<'de>,
     {
         let s = String::deserialize(deserializer)?;
-        Self::from_string(&s).map_err(serde::de::Error::custom)
+        Self::from_str(&s).map_err(serde::de::Error::custom)
     }
 }
 
 impl SupportedModels {
-    fn to_string(&self) -> &'static str {
+    fn to_str(&self) -> &'static str {
         match self {
             SupportedModels::GPT41Nano20250414 => "gpt-4.1-nano-2025-04-14",
             SupportedModels::Claude35HaikuLatest => "claude-3-5-haiku-latest",
         }
     }
 
-    fn from_string(model: &str) -> Result<SupportedModels> {
+    fn from_str(model: &str) -> Result<SupportedModels> {
         match model {
             "gpt-4.1-nano-2025-04-14" => Ok(SupportedModels::GPT41Nano20250414),
             "claude-3-5-haiku-latest" => Ok(SupportedModels::Claude35HaikuLatest),

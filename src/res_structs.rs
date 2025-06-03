@@ -124,10 +124,10 @@ impl LLMResponse {
     fn cost(&self) -> PyResult<f64> {
         let input: f64;
         let output: f64;
-        if self.model.to_string() == "claude-3-5-haiku-latest" {
+        if self.model.to_str() == "claude-3-5-haiku-latest" {
             input = 0.8;
             output = 4.0;
-        } else if self.model.to_string() == "gpt-4.1-nano-2025-04-14" {
+        } else if self.model.to_str() == "gpt-4.1-nano-2025-04-14" {
             input = 0.1;
             output = 0.4;
         } else {
@@ -174,10 +174,10 @@ impl LLMResponse {
     pub(crate) fn cost_test(&self) -> Result<f64> {
         let input: f64;
         let output: f64;
-        if self.model.to_string() == "claude-3-5-haiku-latest" {
+        if self.model.to_str() == "claude-3-5-haiku-latest" {
             input = 0.8;
             output = 4.0;
-        } else if self.model.to_string() == "gpt-4.1-nano-2025-04-14" {
+        } else if self.model.to_str() == "gpt-4.1-nano-2025-04-14" {
             input = 0.1;
             output = 0.4;
         } else {

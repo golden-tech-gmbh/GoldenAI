@@ -170,7 +170,7 @@ impl AnthropicRequest {
         prompt: Option<&str>,
     ) -> PyResult<Self> {
         Ok(Self {
-            model: SupportedModels::from_string(model).unwrap(),
+            model: SupportedModels::from_str(model).unwrap(),
             max_tokens,
             messages,
             system: prompt.map(|s| s.to_string()),
@@ -198,7 +198,7 @@ impl OpenAIRequest {
     #[pyo3(signature = (model, max_tokens,messages,prompt=None))]
     pub fn new(model: &str, max_tokens: u32, messages: Vec<Message>, prompt: Option<&str>) -> Self {
         Self {
-            model: SupportedModels::from_string(model).unwrap(),
+            model: SupportedModels::from_str(model).unwrap(),
             max_tokens,
             messages: match prompt {
                 Some(p) => {

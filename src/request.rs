@@ -166,7 +166,7 @@ fn count_tokens_openai(request_body: OpenAIRequest) -> Result<u32> {
         messages.push(message);
     }
 
-    let max_tokens = num_tokens_from_messages(request_body.model.to_string(), &messages)?;
+    let max_tokens = num_tokens_from_messages(request_body.model.to_str(), &messages)?;
 
     Ok(max_tokens as u32)
 }
@@ -179,7 +179,7 @@ mod tests {
     #[tokio::test]
     async fn test_request_anthropic() {
         let request_body = AnthropicRequest {
-            model: SupportedModels::from_string("claude-3-5-haiku-latest").unwrap(),
+            model: SupportedModels::from_str("claude-3-5-haiku-latest").unwrap(),
             max_tokens: 1024,
             messages: vec![Message {
                 role: "user".to_string(),
