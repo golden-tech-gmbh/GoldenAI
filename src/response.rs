@@ -1,59 +1,11 @@
-use crate::SupportedModels;
-use anyhow::{Result, anyhow};
+use anyhow::anyhow;
 use pyo3::exceptions::PyTypeError;
-use pyo3::prelude::*;
-use pyo3::pyclass;
+use pyo3::{PyResult, pyclass, pymethods};
 use serde::Deserialize;
 
-#[derive(Deserialize, Debug, Clone)]
-#[pyclass(dict, get_all, set_all)]
-pub struct ResponseMsgOpenAI {
-    pub role: String,
-    pub content: String,
-}
-
-#[pymethods]
-impl ResponseMsgOpenAI {
-    fn __repr__(&self) -> PyResult<String> {
-        Ok(format!(
-            "ResponseMsgOpenAI<role={:?},content={:?}>",
-            self.role, self.content
-        ))
-    }
-}
-
-#[derive(Deserialize, Debug, Clone)]
-#[pyclass(dict, get_all, set_all)]
-pub struct ResponseChoiceOpenAI {
-    pub index: u32,
-    pub message: ResponseMsgOpenAI,
-    pub finish_reason: Option<String>,
-}
-
-#[pymethods]
-impl ResponseChoiceOpenAI {
-    fn __repr__(&self) -> PyResult<String> {
-        Ok(format!(
-            "ResponseChoiceOpenAI<index={:?},message={:?},finish_reason={:?}>",
-            self.index, self.message, self.finish_reason
-        ))
-    }
-}
-
-#[derive(Deserialize, Debug, Clone)]
-#[pyclass(dict, get_all, set_all)]
-pub struct ResponseContent {
-    #[serde(rename = "type")]
-    pub content_type: String,
-    pub text: String,
-}
-
-#[pymethods]
-impl ResponseContent {
-    fn __repr__(&self) -> PyResult<String> {
-        Ok(format!("ResponseContent<text={:?}>", self.text))
-    }
-}
+use crate::SupportedModels;
+use crate::anthropic::structs::ResponseAnthropic;
+use crate::openai::structs::ResponseChoiceOpenAI;
 
 #[derive(Deserialize, Debug, Clone)]
 #[pyclass(dict, get_all, set_all)]
@@ -83,9 +35,9 @@ pub(crate) struct LLMResponse {
     pub response_type: String,
     pub usage: Usage,
 
-    pub role: Option<String>,                  // Anthropic
-    pub content: Option<Vec<ResponseContent>>, // Anthropic
-    pub stop_reason: Option<String>,           // Anthropic
+    pub role: Option<String>,                    // Anthropic
+    pub content: Option<Vec<ResponseAnthropic>>, // Anthropic
+    pub stop_reason: Option<String>,             // Anthropic
 
     pub choices: Option<Vec<ResponseChoiceOpenAI>>, // OpenAI
 }
@@ -171,7 +123,7 @@ impl std::fmt::Display for LLMResponse {
 /// for test purposes
 impl LLMResponse {
     #[allow(dead_code)]
-    pub(crate) fn cost_test(&self) -> Result<f64> {
+    pub(crate) fn cost_test(&self) -> anyhow::Result<f64> {
         let input: f64;
         let output: f64;
         if self.model.to_str() == "claude-3-5-haiku-latest" {

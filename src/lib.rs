@@ -1,18 +1,25 @@
-mod ollama;
-mod req_structs;
-mod request;
-mod res_structs;
+mod message;
+mod response;
+
+mod openai {
+    pub mod openai;
+    pub mod structs;
+}
+
+mod anthropic {
+    pub mod anthropic;
+    pub mod structs;
+}
+
+mod ollama {
+    pub mod ollama;
+    pub mod structs;
+}
 
 use anyhow::{Result, anyhow};
 use pyo3::exceptions::PyException;
 use pyo3::prelude::*;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
-
-use ollama::get_response_ollama;
-use request::{
-    get_count_tokens_anthropic, get_count_tokens_openai, get_response_anthropic,
-    get_response_openai,
-};
 
 #[pyclass(eq, eq_int)]
 #[derive(PartialEq, Clone, Debug)]
@@ -64,19 +71,19 @@ impl SupportedModels {
 }
 
 #[pyfunction]
-fn send<'p>(request_body: Bound<'p, PyAny>) -> PyResult<res_structs::LLMResponse> {
-    if let Ok(anthropic_req) = request_body.extract::<req_structs::AnthropicRequest>() {
-        match get_response_anthropic(anthropic_req) {
+fn send<'p>(request_body: Bound<'p, PyAny>) -> PyResult<response::LLMResponse> {
+    if let Ok(anthropic_req) = request_body.extract::<anthropic::structs::AnthropicRequest>() {
+        match anthropic::anthropic::get_response_anthropic(anthropic_req) {
             Ok(response) => Ok(response),
             Err(e) => Err(PyException::new_err(e.to_string())),
         }
-    } else if let Ok(openai_req) = request_body.extract::<req_structs::OpenAIRequest>() {
-        match get_response_openai(openai_req) {
+    } else if let Ok(openai_req) = request_body.extract::<openai::structs::OpenAIRequest>() {
+        match openai::openai::get_response_openai(openai_req) {
             Ok(response) => Ok(response),
             Err(e) => Err(PyException::new_err(e.to_string())),
         }
-    } else if let Ok(ollama_req) = request_body.extract::<ollama::OllamaRequest>() {
-        match get_response_ollama(ollama_req) {
+    } else if let Ok(ollama_req) = request_body.extract::<ollama::structs::OllamaRequest>() {
+        match ollama::ollama::get_response_ollama(ollama_req) {
             Ok(response) => Ok(response),
             Err(e) => Err(PyException::new_err(e.to_string())),
         }
@@ -87,17 +94,18 @@ fn send<'p>(request_body: Bound<'p, PyAny>) -> PyResult<res_structs::LLMResponse
 
 #[pyfunction]
 fn count_tokens<'p>(request_body: Bound<'p, PyAny>) -> PyResult<u32> {
-    if let Ok(anthropic_req) = request_body.extract::<req_structs::AnthropicRequest>() {
+    if let Ok(anthropic_req) = request_body.extract::<anthropic::structs::AnthropicRequest>() {
         // TODO! still using match instead of map,
         // TODO! to avoid RustRover IDE error hint due to Async type missmatch
         // TODO! but chain with map_err() is working without async (it actually have to do without it)
-        match get_count_tokens_anthropic(anthropic_req) {
+        match anthropic::anthropic::get_count_tokens_anthropic(anthropic_req) {
             Ok(tokens) => Ok(tokens),
             Err(e) => Err(PyException::new_err(e.to_string())),
         }
-    } else if let Ok(openai_req) = request_body.extract::<req_structs::OpenAIRequest>() {
-        get_count_tokens_openai(openai_req).map_err(|e| PyException::new_err(e.to_string()))
-    } else if let Ok(_ollama_req) = request_body.extract::<ollama::OllamaRequest>() {
+    } else if let Ok(openai_req) = request_body.extract::<openai::structs::OpenAIRequest>() {
+        openai::openai::get_count_tokens_openai(openai_req)
+            .map_err(|e| PyException::new_err(e.to_string()))
+    } else if let Ok(_ollama_req) = request_body.extract::<ollama::structs::OllamaRequest>() {
         Ok(0u32) // TODO! Ollama is not necessary to count tokens for now
     } else {
         Err(PyException::new_err("Invalid request body"))
@@ -107,15 +115,18 @@ fn count_tokens<'p>(request_body: Bound<'p, PyAny>) -> PyResult<u32> {
 /// A Python module implemented in Rust.
 #[pymodule]
 fn goldenai(m: &Bound<'_, PyModule>) -> PyResult<()> {
-    m.add_class::<req_structs::AnthropicRequest>()?;
-    m.add_class::<req_structs::Message>()?;
-    m.add_class::<req_structs::TextContent>()?;
-    m.add_class::<req_structs::DocumentContent>()?;
-    m.add_class::<req_structs::DocumentSourceContent>()?;
-    m.add_class::<req_structs::Content>()?;
-    m.add_class::<req_structs::OpenAIRequest>()?;
-    m.add_class::<res_structs::LLMResponse>()?;
-    m.add_class::<ollama::OllamaRequest>()?;
+    m.add_class::<anthropic::structs::AnthropicRequest>()?;
+    m.add_class::<openai::structs::OpenAIRequest>()?;
+    m.add_class::<ollama::structs::OllamaRequest>()?;
+
+    m.add_class::<message::Message>()?;
+    m.add_class::<message::TextContent>()?;
+    m.add_class::<message::DocumentContent>()?;
+    m.add_class::<message::DocumentSourceContent>()?;
+    m.add_class::<message::Content>()?;
+
+    m.add_class::<response::LLMResponse>()?;
+
     m.add_function(wrap_pyfunction!(send, m)?)?;
     m.add_function(wrap_pyfunction!(count_tokens, m)?)?;
     Ok(())
