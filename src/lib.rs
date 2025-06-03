@@ -4,14 +4,15 @@ mod request;
 mod res_structs;
 
 use anyhow::{Result, anyhow};
-use ollama::{OllamaRequest, get_response_ollama};
 use pyo3::exceptions::PyException;
 use pyo3::prelude::*;
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
+use ollama::get_response_ollama;
 use request::{
     get_count_tokens_anthropic, get_count_tokens_openai, get_response_anthropic,
     get_response_openai,
 };
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 #[pyclass(eq, eq_int)]
 #[derive(PartialEq, Clone, Debug)]
@@ -62,7 +63,6 @@ impl SupportedModels {
     }
 }
 
-/// Send prepared AnthropicRequest
 #[pyfunction]
 fn send<'p>(request_body: Bound<'p, PyAny>) -> PyResult<res_structs::LLMResponse> {
     if let Ok(anthropic_req) = request_body.extract::<req_structs::AnthropicRequest>() {
@@ -75,7 +75,7 @@ fn send<'p>(request_body: Bound<'p, PyAny>) -> PyResult<res_structs::LLMResponse
             Ok(response) => Ok(response),
             Err(e) => Err(PyException::new_err(e.to_string())),
         }
-    } else if let Ok(ollama_req) = request_body.extract::<OllamaRequest>() {
+    } else if let Ok(ollama_req) = request_body.extract::<ollama::OllamaRequest>() {
         match get_response_ollama(ollama_req) {
             Ok(response) => Ok(response),
             Err(e) => Err(PyException::new_err(e.to_string())),
@@ -97,7 +97,7 @@ fn count_tokens<'p>(request_body: Bound<'p, PyAny>) -> PyResult<u32> {
         }
     } else if let Ok(openai_req) = request_body.extract::<req_structs::OpenAIRequest>() {
         get_count_tokens_openai(openai_req).map_err(|e| PyException::new_err(e.to_string()))
-    } else if let Ok(_ollama_req) = request_body.extract::<OllamaRequest>() {
+    } else if let Ok(_ollama_req) = request_body.extract::<ollama::OllamaRequest>() {
         Ok(0u32) // TODO! Ollama is not necessary to count tokens for now
     } else {
         Err(PyException::new_err("Invalid request body"))
@@ -115,7 +115,7 @@ fn goldenai(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<req_structs::Content>()?;
     m.add_class::<req_structs::OpenAIRequest>()?;
     m.add_class::<res_structs::LLMResponse>()?;
-    m.add_class::<OllamaRequest>()?;
+    m.add_class::<ollama::OllamaRequest>()?;
     m.add_function(wrap_pyfunction!(send, m)?)?;
     m.add_function(wrap_pyfunction!(count_tokens, m)?)?;
     Ok(())
