@@ -24,17 +24,45 @@ class TextContent:
     content_type: str
     text: str
 
-    def __init__(self, text: str) -> None: ...
+    def __init__(self, text: str) -> None:
+        """
+        Create a TextContent object.
+
+        :param text: The text to create the TextContent object from.
+        """
+        ...
 
     def __repr__(self) -> str: ...
 
 
 class Content:
-    @classmethod
-    def from_text(cls: Type["Content"], text: str) -> "Content": ...
 
     @classmethod
-    def from_document(cls: Type["Content"], *args: Any, **kwargs: Any) -> "Content": ...
+    def from_text(cls: Type["Content"], text: str) -> "Content":
+        """
+        Create a Content object from a string.
+
+        Args:
+            text (str): The string to create the Content object from.
+
+        Returns:
+            Content: The Content object created from the string.
+        """
+        ...
+
+    @classmethod
+    def from_document(cls: Type["Content"], *args: Any, **kwargs: Any) -> "Content":
+        """
+        Create a Content object from a document.
+
+        Args:
+            *args: Arguments passed to the document's constructor.
+            **kwargs: Keyword arguments passed to the document's constructor.
+
+        Returns:
+            Content: The Content object created from the document.
+        """
+        ...
 
     def __repr__(self) -> str: ...
 
@@ -43,7 +71,14 @@ class Message:
     role: str
     content: List[Content]
 
-    def __init__(self, content: List[Content]) -> None: ...
+    def __init__(self, content: List[Content]) -> None:
+        """
+        Initialize a Message object.
+
+        Args:
+            content (List[Content]): The content of the message.
+        """
+        ...
 
     def __repr__(self) -> str: ...
 
@@ -60,7 +95,18 @@ class AnthropicRequest:
             max_tokens: int,
             messages: List[Message],
             prompt: str | None = None,
-    ) -> None: ...
+    ) -> None:
+        """
+        Initialize an AnthropicRequest object.
+
+        Args:
+            model (str): The name of the AI model to use.
+            max_tokens (int): The maximum number of tokens the AI model should generate.
+            messages (List[Message]): The conversation history.
+            prompt (str | None, optional): The initial prompt for the AI model.
+                Defaults to None.
+        """
+        ...
 
     def __repr__(self) -> str: ...
 
@@ -77,7 +123,18 @@ class OpenAIRequest:
             max_tokens: int,
             messages: List[Message],
             prompt: str | None = None,
-    ) -> None: ...
+    ) -> None:
+        """
+        Initialize an OpenAIRequest object.
+
+        Args:
+            model (str): The name of the AI model to use.
+            max_tokens (int): The maximum number of tokens the AI model should generate.
+            messages (List[Message]): The conversation history.
+            prompt (str | None, optional): The initial prompt for the AI model.
+                Defaults to None.
+        """
+        ...
 
     def __repr__(self) -> str: ...
 
@@ -94,7 +151,18 @@ class OllamaRequest:
             model: str,
             messages: List[Message],
             prompt: str | None = None,
-    ) -> None: ...
+    ) -> None:
+        """
+        Initialize an OllamaRequest object.
+
+        Args:
+            url (str): The URL of the Ollama API.
+            model (str): The name of the AI model to use.
+            messages (List[Message]): The conversation history.
+            prompt (str | None, optional): The initial prompt for the AI model.
+                Defaults to None.
+        """
+        ...
 
     def __repr__(self) -> str: ...
 
@@ -135,7 +203,16 @@ class LLMResponse:
 
     def __str__(self) -> str: ...
 
-    def cost(self) -> float: ...
+    def cost(self) -> float:
+        """
+        Calculate cost of the response.
+
+        The cost is calculated based on the model used and the number of tokens in the response.
+
+        :return: The cost of the response in dollars.
+        """
+
+        ...
 
 
 def send(request_body: AnthropicRequest | OpenAIRequest | OllamaRequest) -> LLMResponse:
