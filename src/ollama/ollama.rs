@@ -1,4 +1,5 @@
 use anyhow::{Result, anyhow};
+use std::time::Duration;
 
 use crate::ollama::structs::{ConvertedOllamaRequest, OllamaRequest, OllamaResponse};
 use crate::response::LLMResponse;
@@ -9,6 +10,25 @@ pub async fn get_response_ollama(request_body: OllamaRequest) -> Result<LLMRespo
 }
 
 async fn request_ollama(request_body: OllamaRequest) -> Result<LLMResponse> {
+    // check if url is connectable
+    let url = format!("{}/api/version", request_body.url);
+    let client = reqwest::Client::new();
+    let response = client
+        .get(&url)
+        .timeout(Duration::from_secs(3))
+        .send()
+        .await?;
+
+    if !response.status().is_success() {
+        let err_status = response.status();
+        let error_text = response.text().await?;
+        return Err(anyhow!(
+            "Error: HTTP {}, Response: {}",
+            err_status,
+            error_text
+        ));
+    }
+
     let client = reqwest::Client::new();
     let response = client
         .post(format!("{}/api/generate", request_body.url))
