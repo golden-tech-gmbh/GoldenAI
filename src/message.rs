@@ -1,7 +1,7 @@
 use base64::Engine;
 use pyo3::exceptions::{PyException, PyTypeError};
 use pyo3::prelude::PyAnyMethods;
-use pyo3::types::{PyDict, PyTuple, PyType};
+use pyo3::types::PyType;
 use pyo3::{Bound, FromPyObject, IntoPyObject, PyAny, PyResult, pyclass, pymethods};
 use serde::{Serialize, Serializer};
 use std::path::PathBuf;
@@ -16,6 +16,13 @@ pub struct DocumentSourceContent {
     pub(crate) data: String,       // base64
 }
 
+#[pymethods]
+impl DocumentSourceContent {
+    fn __repr__(&self) -> PyResult<String> {
+        Ok(format!("{self:?}"))
+    }
+}
+
 #[derive(Serialize, Clone, Debug)]
 #[pyclass(dict, get_all, set_all, subclass)]
 pub struct DocumentContent {
@@ -28,8 +35,8 @@ pub struct DocumentContent {
 #[pymethods]
 impl DocumentContent {
     #[new]
-    pub fn new(document_path: &str) -> PyResult<Self> {
-        let path = PathBuf::from(document_path);
+    pub fn new(path: &str) -> PyResult<Self> {
+        let path = PathBuf::from(path);
 
         // Get file extension and convert to lowercase for case-insensitive matching
         let ext = path
@@ -165,15 +172,11 @@ impl Content {
         })
     }
 
-    #[allow(unused_variables)]
     #[classmethod]
-    #[pyo3(signature = (*args, **kwargs))]
-    fn from_document<'p>(
-        _cls: Bound<'p, PyType>,
-        args: Bound<'p, PyTuple>,
-        kwargs: Option<Bound<'p, PyDict>>,
-    ) -> PyResult<Self> {
-        Err(PyException::new_err("Not implemented yet"))
+    fn from_document<'p>(_cls: Bound<'p, PyType>, path: &str) -> PyResult<Self> {
+        Ok(Self {
+            ctx: ContentTypeInner::Document(DocumentContent::new(path)?),
+        })
     }
 
     fn __repr__(&self) -> PyResult<String> {

@@ -1,12 +1,10 @@
-from typing import Any, List, Type, Dict
+from typing import List, Type, Dict
 
 
 class DocumentSourceContent:
     content_type: str
     media_type: str
     data: str
-
-    def __init__(self, content_type: str, media_type: str, data: str) -> None: ...
 
     def __repr__(self) -> str: ...
 
@@ -15,7 +13,14 @@ class DocumentContent:
     content_type: str
     source: DocumentSourceContent
 
-    def __init__(self, content_type: str, source: DocumentSourceContent) -> None: ...
+    def __init__(self, path: str) -> None:
+        """
+        Initialize a DocumentContent object.
+
+        Args:
+            path (str): The path to the document to create the DocumentContent object from.
+        """
+        ...
 
     def __repr__(self) -> str: ...
 
@@ -37,6 +42,12 @@ class TextContent:
 
 class Content:
 
+    def __init__(self, object: TextContent | DocumentContent):
+        """
+        Initialize a Content object.
+        """
+        ...
+
     @classmethod
     def from_text(cls: Type["Content"], text: str) -> "Content":
         """
@@ -51,13 +62,12 @@ class Content:
         ...
 
     @classmethod
-    def from_document(cls: Type["Content"], *args: Any, **kwargs: Any) -> "Content":
+    def from_document(cls: Type["Content"], path: str) -> "Content":
         """
         Create a Content object from a document.
 
         Args:
-            *args: Arguments passed to the document's constructor.
-            **kwargs: Keyword arguments passed to the document's constructor.
+            path (str): The path to the document to create the Content object from.
 
         Returns:
             Content: The Content object created from the document.
@@ -151,6 +161,7 @@ class OllamaRequest:
             model: str,
             messages: List[Message],
             prompt: str | None = None,
+            image: str | None = None
     ) -> None:
         """
         Initialize an OllamaRequest object.
@@ -160,6 +171,8 @@ class OllamaRequest:
             model (str): The name of the AI model to use.
             messages (List[Message]): The conversation history.
             prompt (str | None, optional): The initial prompt for the AI model.
+                Defaults to None.
+            image (str | None, optional): The path to the image file.
                 Defaults to None.
         """
         ...
