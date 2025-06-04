@@ -1,16 +1,33 @@
+"""
+This is an example of how to use goldenai
+- open goldenai repo
+- prepare venv and install wheels
+- Set PYTHONPATH to the root directory of goldenai and run
+```sh
+python examples/python/example.py
+```
+"""
+
+
 def example_using_anthropic():
     from goldenai import Content, Message, AnthropicRequest, send, LLMResponse, count_tokens
 
-    # generate a content object
-    # alternatively, you can also:
+    # # generate a content object
+    # # alternatively, you can also:
     # from goldenai import TextContent
     # text = TextContent("Hello, Claude!")
     # content = Content(text)
+    # # or
+    # from goldenai import DocumentContent
+    # doc = DocumentContent("white.jpg")
+    # content = Content(doc)
+
     content = Content.from_text("Hello, Claude!")
-    content2 = Content.from_text("What is the day today?")
+    content2 = Content.from_text("What is color of this image?")
+    content3 = Content.from_document("examples/python/white.jpg")
 
     # construct a message
-    message = Message(content=[content, content2])
+    message = Message(content=[content, content2, content3])
 
     # contruct a request
     request = AnthropicRequest(model="claude-3-5-haiku-latest", max_tokens=1024, messages=[message],
@@ -47,10 +64,12 @@ def example_using_openai():
 def example_using_ollama():
     from goldenai import Content, Message, OllamaRequest, send
 
-    content = Content.from_text("What is your name?")
+    content = Content.from_text("What is the color of this image?")
+    # DO NOT CONSTRUCT DOCUMENT CONTENT IN OLLAMA, PASS IT DIRECTLY IN REQUEST
+    # content = Content.from_document("white.jpg")  # WRONG USAGE! THIS WON'T WORK!
     message = Message(content=[content])
     request = OllamaRequest(url="http://10.8.0.1:11434", model="qwen2.5vl:latest", messages=[message],
-                            prompt="Please translate my message to Ukrainian")
+                            prompt="Please answer in Chinese", image="examples/python/white.jpg")
 
     res = send(request)
 
