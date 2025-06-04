@@ -1,4 +1,3 @@
-use anyhow::anyhow;
 use pyo3::exceptions::PyTypeError;
 use pyo3::{PyResult, pyclass, pymethods};
 use serde::Deserialize;
@@ -73,7 +72,7 @@ impl LLMResponse {
         Ok(format!("{}", content))
     }
 
-    fn cost(&self) -> PyResult<f64> {
+    pub fn cost(&self) -> PyResult<f64> {
         let input: f64;
         let output: f64;
         if self.model.to_str() == "claude-3-5-haiku-latest" {
@@ -117,31 +116,5 @@ impl std::fmt::Display for LLMResponse {
             }
         };
         write!(f, "{}", content)
-    }
-}
-
-/// for test purposes
-impl LLMResponse {
-    #[allow(dead_code)]
-    pub(crate) fn cost_test(&self) -> anyhow::Result<f64> {
-        let input: f64;
-        let output: f64;
-        if self.model.to_str() == "claude-3-5-haiku-latest" {
-            input = 0.8;
-            output = 4.0;
-        } else if self.model.to_str() == "gpt-4.1-nano-2025-04-14" {
-            input = 0.1;
-            output = 0.4;
-        } else {
-            return Err(anyhow!("Unsupported model"));
-        }
-
-        let input_tokens = self.usage.input_tokens as f64;
-        let output_tokens = self.usage.output_tokens as f64;
-
-        let input_cost = input * input_tokens;
-        let output_cost = output * output_tokens;
-
-        Ok((input_cost + output_cost) / 1_000_000.0)
     }
 }

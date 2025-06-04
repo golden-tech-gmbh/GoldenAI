@@ -119,6 +119,7 @@ async fn test_request_anthropic() {
         }],
         system: Some("Please answer in Chinese".to_string()),
     };
+
     let input_tokens = count_tokens_anthropic(request_body.clone()).await.unwrap();
     println!("Input tokens: {}", input_tokens);
 
@@ -126,7 +127,7 @@ async fn test_request_anthropic() {
     match response {
         Ok(res) => {
             println!("{}", res);
-            println!("{:?}", res.cost_test().unwrap());
+            println!("{:?}", res.cost().unwrap());
         }
         Err(e) => println!("Error: {}", e),
     }

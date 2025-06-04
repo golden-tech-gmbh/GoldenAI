@@ -107,7 +107,7 @@ async fn test_request_openai() {
     match response {
         Ok(res) => {
             println!("{}", res);
-            println!("{:?}", res.cost_test().unwrap());
+            println!("{:?}", res.cost().unwrap());
         }
         Err(e) => println!("Error: {}", e),
     }
