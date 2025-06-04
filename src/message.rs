@@ -1,28 +1,82 @@
-use pyo3::{pyclass, pymethods, Bound, FromPyObject, IntoPyObject, PyAny, PyResult};
+use base64::Engine;
 use pyo3::exceptions::{PyException, PyTypeError};
 use pyo3::prelude::PyAnyMethods;
 use pyo3::types::{PyDict, PyTuple, PyType};
+use pyo3::{Bound, FromPyObject, IntoPyObject, PyAny, PyResult, pyclass, pymethods};
 use serde::{Serialize, Serializer};
+use std::path::PathBuf;
 
 #[derive(Serialize, Clone, Debug)]
 #[pyclass(dict, get_all, set_all, subclass)]
 pub struct DocumentSourceContent {
+    // Anthropic schema
     #[serde(rename = "type")]
-    pub(crate) content_type: String,
-    pub(crate) media_type: String,
-    pub(crate) data: String, // base64
+    pub(crate) content_type: String, // "base64"
+    pub(crate) media_type: String, // "image/jpeg"
+    pub(crate) data: String,       // base64
 }
 
 #[derive(Serialize, Clone, Debug)]
 #[pyclass(dict, get_all, set_all, subclass)]
 pub struct DocumentContent {
+    // Anthropic schema
     #[serde(rename = "type")]
-    pub(crate) content_type: String,
+    pub(crate) content_type: String, // "image"
     pub(crate) source: DocumentSourceContent,
 }
 
 #[pymethods]
 impl DocumentContent {
+    #[new]
+    pub fn new(document_path: &str) -> PyResult<Self> {
+        let path = PathBuf::from(document_path);
+
+        // Get file extension and convert to lowercase for case-insensitive matching
+        let ext = path
+            .extension()
+            .and_then(|s| s.to_str())
+            .map(|s| s.to_lowercase())
+            .unwrap();
+
+        // Determine content type and media type based on file extension
+        let (content_type, media_type) = match ext.as_str() {
+            // Image types
+            "jpg" | "image" => ("image", "image/jpeg"),
+            "png" => ("image", "image/png"),
+            "gif" => ("image", "image/gif"),
+            "bmp" => ("image", "image/bmp"),
+            "webp" => ("image", "image/webp"),
+            "svg" => ("image", "image/svg+xml"),
+            "tiff" | "tif" => ("image", "image/tiff"),
+            "heic" | "heif" => ("image", "image/heic"),
+
+            // PDF
+            "pdf" => ("document", "application/pdf"),
+
+            // Unsupported type
+            _ => {
+                return Err(PyTypeError::new_err(format!(
+                    "Unsupported file type: .{}",
+                    ext
+                )));
+            }
+        };
+
+        // Read file and encode as base64
+        let data = std::fs::read(&path)
+            .map_err(|e| PyException::new_err(format!("Failed to read file: {}", e)))?;
+        let data = base64::engine::general_purpose::STANDARD.encode(&data);
+
+        Ok(Self {
+            content_type: content_type.to_string(),
+            source: DocumentSourceContent {
+                content_type: "base64".to_string(),
+                media_type: media_type.to_string(),
+                data: data.to_string(),
+            },
+        })
+    }
+
     fn __repr__(&self) -> PyResult<String> {
         Ok(format!("{self:?}"))
     }

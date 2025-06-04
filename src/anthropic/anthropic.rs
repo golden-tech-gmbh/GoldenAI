@@ -103,19 +103,24 @@ async fn count_tokens_anthropic(request_body: AnthropicRequest) -> Result<u32> {
 
 #[tokio::test]
 async fn test_request_anthropic() {
-    use crate::message::{Content, ContentTypeInner, TextContent};
+    use crate::message::{Content, ContentTypeInner, DocumentContent, TextContent};
 
     let request_body = AnthropicRequest {
         model: SupportedModels::from_str("claude-3-5-haiku-latest").unwrap(),
         max_tokens: 1024,
         messages: vec![Message {
             role: "user".to_string(),
-            content: vec![Content {
-                ctx: ContentTypeInner::Text(TextContent {
-                    content_type: "text".to_string(),
-                    text: "Hello, Claude!".to_string(),
-                }),
-            }],
+            content: vec![
+                Content {
+                    ctx: ContentTypeInner::Document(DocumentContent::new("test.pdf").unwrap()),
+                },
+                Content {
+                    ctx: ContentTypeInner::Text(TextContent {
+                        content_type: "text".to_string(),
+                        text: "What is the recipient address from this invoice?".to_string(),
+                    }),
+                },
+            ],
         }],
         system: Some("Please answer in Chinese".to_string()),
     };
