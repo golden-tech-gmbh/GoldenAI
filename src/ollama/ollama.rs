@@ -32,7 +32,7 @@ async fn request_ollama(request_body: OllamaRequest) -> Result<LLMResponse> {
     let client = reqwest::Client::new();
     let response = client
         .post(format!("{}/api/generate", request_body.url))
-        .json(&ConvertedOllamaRequest::from_ollama_request(&request_body))
+        .json(&ConvertedOllamaRequest::from_ollama_request(request_body))
         .send()
         .await?;
 
@@ -57,7 +57,6 @@ async fn request_ollama(request_body: OllamaRequest) -> Result<LLMResponse> {
 async fn test_ollama_request() {
     use std::env;
 
-    use crate::SupportedModels;
     use crate::message::{Content, ContentTypeInner, Message, TextContent};
 
     let url = env::var("OLLAMA_URL").unwrap_or("".to_string());
@@ -65,20 +64,26 @@ async fn test_ollama_request() {
         panic!("OLLAMA_URL environment variable must be set");
     }
 
-    let request_body = OllamaRequest {
-        url,
-        model: SupportedModels::Qwen25VL,
-        system: None,
-        messages: vec![Message {
+    let request_body = OllamaRequest::new(
+        &url,
+        "qwen2.5vl:latest",
+        vec![Message {
             role: "user".to_string(),
             content: vec![Content {
                 ctx: ContentTypeInner::Text(TextContent {
                     content_type: "text".to_string(),
-                    text: "Hello, Claude!".to_string(),
+                    text: "What's the color of this picture?".to_string(),
                 }),
             }],
         }],
-    };
-    let res = request_ollama(request_body).await.unwrap();
+        Some("Please answer in Chinese"),
+        Some("white.jpg"),
+    )
+    .unwrap();
+
+    let res = request_ollama(request_body).await.unwrap_or_else(|e| {
+        println!("Error: {}", e);
+        panic!();
+    });
     println!("{:?}", res);
 }

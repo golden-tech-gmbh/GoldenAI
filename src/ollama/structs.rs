@@ -1,6 +1,9 @@
+use base64::Engine;
+use pyo3::exceptions::PyException;
 use pyo3::prelude::*;
 use pyo3::pyclass;
 use serde::{Deserialize, Serialize};
+use std::path::PathBuf;
 
 use crate::SupportedModels;
 use crate::anthropic::structs::ResponseAnthropic;
@@ -14,18 +17,35 @@ pub struct OllamaRequest {
     pub(crate) model: SupportedModels,
     pub(crate) system: Option<String>,
     pub(crate) messages: Vec<Message>,
+    pub(crate) image: Option<String>, // base64 encoded images
 }
 
 #[pymethods]
 impl OllamaRequest {
     #[new]
-    #[pyo3(signature = (url, model, messages,prompt=None))]
-    fn new(url: &str, model: &str, messages: Vec<Message>, prompt: Option<&str>) -> PyResult<Self> {
+    #[pyo3(signature = (url, model, messages,prompt=None, image=None))]
+    pub fn new(
+        url: &str,
+        model: &str,
+        messages: Vec<Message>,
+        prompt: Option<&str>,
+        image: Option<&str>, // image path
+    ) -> PyResult<Self> {
+        let path = PathBuf::from(image.unwrap_or(""));
+        if !path.exists() {
+            return Err(PyException::new_err("Image file does not exist"));
+        }
+
+        let data = std::fs::read(&path)
+            .map_err(|e| PyException::new_err(format!("Failed to read file: {}", e)))?;
+        let data = base64::engine::general_purpose::STANDARD.encode(&data);
+
         Ok(Self {
             url: url.to_string(),
             model: SupportedModels::from_str(model).unwrap(),
             system: prompt.map(|s| s.to_string()),
             messages,
+            image: Some(data),
         })
     }
 
@@ -39,10 +59,11 @@ pub struct ConvertedOllamaRequest {
     pub model: String,
     pub prompt: String,
     pub stream: bool,
+    pub images: Option<Vec<String>>, // base64 encoded images
 }
 
 impl ConvertedOllamaRequest {
-    pub fn from_ollama_request(request_body: &OllamaRequest) -> Self {
+    pub fn from_ollama_request(request_body: OllamaRequest) -> Self {
         Self {
             model: request_body.model.to_str().to_string(),
             prompt: match &request_body.system {
@@ -77,6 +98,10 @@ impl ConvertedOllamaRequest {
                 }
             },
             stream: false, // TODO! for now is disabled
+            images: match request_body.image {
+                Some(image) => Some(vec![image]),
+                None => None,
+            },
         }
     }
 }
