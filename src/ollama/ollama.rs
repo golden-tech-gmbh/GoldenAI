@@ -105,9 +105,70 @@ async fn test_ollama_request() {
     )
     .unwrap();
 
-    let res = request_ollama(request_body).await.unwrap_or_else(|e| {
-        println!("Error: {}", e);
-        panic!();
+    let res = request_ollama(request_body, false)
+        .await
+        .unwrap_or_else(|e| {
+            println!("Error: {}", e);
+            panic!();
+        });
+
+    println!("{:?}", res);
+}
+
+#[tokio::test]
+async fn test_ollama_chat() {
+    use std::env;
+
+    use crate::message::{Content, ContentTypeInner, Message, TextContent};
+
+    let url = env::var("OLLAMA_URL").unwrap_or("".to_string());
+    if url.is_empty() {
+        panic!("OLLAMA_URL environment variable must be set");
+    }
+
+    let mut request_body = OllamaRequest::new(
+        &url,
+        "qwen2.5vl:latest",
+        vec![Message {
+            role: "user".to_string(),
+            content: vec![Content {
+                ctx: ContentTypeInner::Text(TextContent {
+                    content_type: "text".to_string(),
+                    text: "Why sky is blue?".to_string(),
+                }),
+            }],
+        }],
+        None,
+        None,
+    )
+    .unwrap();
+
+    let res = request_ollama(request_body.clone(), true)
+        .await
+        .unwrap_or_else(|e| {
+            println!("Error: {}", e);
+            panic!();
+        });
+
+    println!("{:?}", res);
+
+    request_body.add_response(res.clone());
+    request_body.add_message(Message {
+        role: "user".to_string(),
+        content: vec![Content {
+            ctx: ContentTypeInner::Text(TextContent {
+                content_type: "text".to_string(),
+                text: "Please answer the question in Ukrainian".to_string(),
+            }),
+        }],
     });
+
+    let res = request_ollama(request_body.clone(), true)
+        .await
+        .unwrap_or_else(|e| {
+            println!("Error: {}", e);
+            panic!();
+        });
+
     println!("{:?}", res);
 }
