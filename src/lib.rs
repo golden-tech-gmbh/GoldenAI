@@ -94,6 +94,21 @@ fn send<'p>(request_body: Bound<'p, PyAny>) -> PyResult<response::LLMResponse> {
 }
 
 #[pyfunction]
+fn chat(request_body: Bound<PyAny>) -> PyResult<response::LLMResponse> {
+    if let Ok(ollama_req) = request_body.extract::<ollama::structs::OllamaRequest>() {
+        match ollama::ollama::get_response_ollama(ollama_req, true) {
+            // NOTE! in send mode, chat mode is disabled
+            Ok(response) => Ok(response),
+            Err(e) => Err(PyException::new_err(e.to_string())),
+        }
+    } else {
+        Err(PyException::new_err(
+            "Only Ollama is supported with chat mode",
+        ))
+    }
+}
+
+#[pyfunction]
 fn count_tokens<'p>(request_body: Bound<'p, PyAny>) -> PyResult<u32> {
     if let Ok(anthropic_req) = request_body.extract::<anthropic::structs::AnthropicRequest>() {
         // TODO! still using match instead of map,
@@ -130,5 +145,6 @@ fn goldenai(m: &Bound<'_, PyModule>) -> PyResult<()> {
 
     m.add_function(wrap_pyfunction!(send, m)?)?;
     m.add_function(wrap_pyfunction!(count_tokens, m)?)?;
+    m.add_function(wrap_pyfunction!(chat, m)?)?;
     Ok(())
 }

@@ -179,6 +179,18 @@ class OllamaRequest:
 
     def __repr__(self) -> str: ...
 
+    def add_message(self, message: Message) -> None:
+        """
+        Append a message to the response that will be sent to the LLM in the chat mode.
+        :param message: The message to add.
+        """
+
+    def add_response(self, response: LLMResponse) -> None:
+        """
+        Append a response to the response that will be sent to the LLM in the chat mode.
+        :param response:
+        """
+
 
 class ResponseContent:
     content_type: str
@@ -224,7 +236,6 @@ class LLMResponse:
 
         :return: The cost of the response in dollars.
         """
-
         ...
 
 
@@ -241,4 +252,12 @@ def count_tokens(request_body: AnthropicRequest | OpenAIRequest) -> int:
     Count tokens
     :param request_body: AnthropicRequest or OpenAIRequest
     :return: int
+    """
+
+
+def chat(request_body: OllamaRequest) -> LLMResponse:
+    """
+    Send prepared LLM Request
+    :param request_body: OllamaRequest
+    :return: LLMResponse
     """
