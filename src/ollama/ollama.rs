@@ -74,12 +74,12 @@ async fn test_ollama_request() {
             content: vec![Content {
                 ctx: ContentTypeInner::Text(TextContent {
                     content_type: "text".to_string(),
-                    text: "What's the color of this picture?".to_string(),
+                    text: "What's your name?".to_string(),
                 }),
             }],
         }],
         Some("Please answer in Chinese"),
-        Some("white.jpg"),
+        None,
     )
     .unwrap();
 

@@ -23,7 +23,7 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 #[pyclass(eq, eq_int)]
 #[derive(PartialEq, Clone, Debug)]
-enum SupportedModels {
+pub enum SupportedModels {
     GPT41Nano20250414,
     Claude35HaikuLatest,
     Qwen25VL,

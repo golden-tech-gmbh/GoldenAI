@@ -27,7 +27,7 @@ impl Usage {
 
 #[derive(Deserialize, Debug, Clone)]
 #[pyclass(dict, get_all, frozen)]
-pub(crate) struct LLMResponse {
+pub struct LLMResponse {
     pub id: String,
     pub model: SupportedModels,
     #[serde(rename = "type", alias = "object")]
