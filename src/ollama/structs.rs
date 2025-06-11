@@ -158,11 +158,49 @@ impl OllamaResponse {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize)]
 pub struct OllamaChatMessage {
     pub role: String,
     pub content: String,
     pub images: Option<Vec<String>>,
+}
+
+#[derive(Serialize)]
+pub struct OllamaChatRequest {
+    pub url: String,
+    pub model: String,
+    pub messages: Vec<OllamaChatMessage>,
+    pub stream: bool,
+}
+
+impl OllamaChatRequest {
+    pub fn from_ollama_request(request_body: OllamaRequest, stream: bool) -> Self {
+        let ollama_messages: Vec<OllamaChatMessage> = request_body
+            .clone()
+            .messages
+            .iter()
+            .map(|message| OllamaChatMessage {
+                role: message.role.to_string(),
+                content: message
+                    .content
+                    .iter()
+                    .map(|each_content| match &each_content.ctx {
+                        ContentTypeInner::Text(text) => text.text.clone(),
+                        _ => panic!("Invalid content type"),
+                    })
+                    .collect::<Vec<String>>()
+                    .join("\n\n"),
+                images: None, // TODO! support images
+            })
+            .collect();
+
+        Self {
+            url: request_body.url,
+            model: request_body.model.to_str().to_string(),
+            messages: ollama_messages,
+            stream,
+        }
+    }
 }
 
 #[derive(Deserialize)]
