@@ -23,7 +23,7 @@ pub struct OllamaRequest {
 #[pymethods]
 impl OllamaRequest {
     #[new]
-    #[pyo3(signature = (url, model, messages,prompt=None, image=None))]
+    #[pyo3(signature = (url, model, messages, prompt=None, image=None))]
     pub fn new(
         url: &str,
         model: &str,
@@ -56,6 +56,7 @@ impl OllamaRequest {
 
 #[derive(Serialize)]
 pub struct ConvertedOllamaRequest {
+    pub url: String,
     pub model: String,
     pub prompt: String,
     pub stream: bool,
@@ -65,6 +66,7 @@ pub struct ConvertedOllamaRequest {
 impl ConvertedOllamaRequest {
     pub fn from_ollama_request(request_body: OllamaRequest, stream: bool) -> Self {
         Self {
+            url: request_body.url,
             model: request_body.model.to_str().to_string(),
             prompt: match &request_body.system {
                 Some(system) => {
