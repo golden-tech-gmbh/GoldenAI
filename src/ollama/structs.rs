@@ -31,21 +31,25 @@ impl OllamaRequest {
         prompt: Option<&str>,
         image: Option<&str>, // image path
     ) -> PyResult<Self> {
-        let path = PathBuf::from(image.unwrap_or(""));
-        if !path.exists() {
-            return Err(PyException::new_err("Image file does not exist"));
-        }
-
-        let data = std::fs::read(&path)
-            .map_err(|e| PyException::new_err(format!("Failed to read file: {}", e)))?;
-        let data = base64::engine::general_purpose::STANDARD.encode(&data);
+        let data = match image {
+            Some(image) => {
+                let path = PathBuf::from(image);
+                if !path.exists() {
+                    return Err(PyException::new_err("Image file does not exist"));
+                }
+                let data = std::fs::read(&path)
+                    .map_err(|e| PyException::new_err(format!("Failed to read file: {}", e)))?;
+                Some(base64::engine::general_purpose::STANDARD.encode(&data))
+            }
+            None => None,
+        };
 
         Ok(Self {
             url: url.to_string(),
             model: SupportedModels::from_str(model).unwrap(),
             system: prompt.map(|s| s.to_string()),
             messages,
-            image: Some(data),
+            image: data,
         })
     }
 
