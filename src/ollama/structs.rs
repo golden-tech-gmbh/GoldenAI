@@ -7,7 +7,7 @@ use std::path::PathBuf;
 
 use crate::SupportedModels;
 use crate::anthropic::structs::ResponseAnthropic;
-use crate::message::{ContentTypeInner, Message};
+use crate::message::{Content, ContentTypeInner, Message, TextContent};
 use crate::response::{LLMResponse, Usage};
 
 #[derive(Serialize, Clone, Debug)]
@@ -55,6 +55,22 @@ impl OllamaRequest {
 
     fn __repr__(&self) -> PyResult<String> {
         Ok(format!("{self:?}"))
+    }
+
+    pub fn add_response(&mut self, response: LLMResponse) {
+        self.messages.push(Message {
+            role: "assistant".to_string(),
+            content: vec![Content {
+                ctx: ContentTypeInner::Text(TextContent {
+                    content_type: "text".to_string(),
+                    text: response.content.unwrap()[0].text.clone(),
+                }),
+            }],
+        });
+    }
+
+    pub fn add_message(&mut self, message: Message) {
+        self.messages.push(message);
     }
 }
 
