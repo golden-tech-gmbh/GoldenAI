@@ -11,10 +11,9 @@ pub async fn get_response_ollama(request_body: OllamaRequest) -> Result<LLMRespo
 
 async fn request_ollama(request_body: OllamaRequest) -> Result<LLMResponse> {
     // check if url is connectable
-    let url = format!("{}/api/version", request_body.url);
     let client = reqwest::Client::new();
     let response = client
-        .get(&url)
+        .get(&format!("{}/api/version", request_body.url))
         .timeout(Duration::from_secs(3))
         .send()
         .await?;
@@ -32,7 +31,10 @@ async fn request_ollama(request_body: OllamaRequest) -> Result<LLMResponse> {
     let client = reqwest::Client::new();
     let response = client
         .post(format!("{}/api/generate", request_body.url))
-        .json(&ConvertedOllamaRequest::from_ollama_request(request_body))
+        .json(&ConvertedOllamaRequest::from_ollama_request(
+            request_body,
+            false, // TODO! stream mode
+        ))
         .send()
         .await?;
 

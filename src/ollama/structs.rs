@@ -63,7 +63,7 @@ pub struct ConvertedOllamaRequest {
 }
 
 impl ConvertedOllamaRequest {
-    pub fn from_ollama_request(request_body: OllamaRequest) -> Self {
+    pub fn from_ollama_request(request_body: OllamaRequest, stream: bool) -> Self {
         Self {
             model: request_body.model.to_str().to_string(),
             prompt: match &request_body.system {
@@ -97,7 +97,7 @@ impl ConvertedOllamaRequest {
                     )
                 }
             },
-            stream: false, // TODO! for now is disabled
+            stream,
             images: match request_body.image {
                 Some(image) => Some(vec![image]),
                 None => None,
