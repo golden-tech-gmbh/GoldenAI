@@ -2,7 +2,7 @@ use anyhow::{Result, anyhow};
 use std::time::Duration;
 
 use crate::ollama::structs::{
-    ConvertedOllamaRequest, OllamaChatResponse, OllamaRequest, OllamaResponse,
+    ConvertedOllamaRequest, OllamaChatRequest, OllamaChatResponse, OllamaRequest, OllamaResponse,
 };
 use crate::response::LLMResponse;
 
@@ -31,18 +31,26 @@ pub async fn request_ollama(request_body: OllamaRequest, chat: bool) -> Result<L
     }
 
     let client = reqwest::Client::new();
-    let response = client
-        .post(format!(
-            "{}/api/{}",
-            request_body.url,
-            if chat { "chat" } else { "generate" }
-        ))
-        .json(&ConvertedOllamaRequest::from_ollama_request(
-            request_body,
-            false, // TODO! stream mode
-        ))
-        .send()
-        .await?;
+
+    let response = if chat {
+        client
+            .post(format!("{}/api/{}", request_body.url, "chat"))
+            .json(&OllamaChatRequest::from_ollama_request(
+                request_body,
+                false, // TODO! stream mode
+            ))
+            .send()
+            .await?
+    } else {
+        client
+            .post(format!("{}/api/{}", request_body.url, "generate"))
+            .json(&ConvertedOllamaRequest::from_ollama_request(
+                request_body,
+                false, // TODO! stream mode
+            ))
+            .send()
+            .await?
+    };
 
     if response.status().is_success() {
         if chat {
