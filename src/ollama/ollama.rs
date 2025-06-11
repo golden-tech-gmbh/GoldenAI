@@ -5,11 +5,11 @@ use crate::ollama::structs::{ConvertedOllamaRequest, OllamaRequest, OllamaRespon
 use crate::response::LLMResponse;
 
 #[tokio::main]
-pub async fn get_response_ollama(request_body: OllamaRequest) -> Result<LLMResponse> {
-    request_ollama(request_body).await
+pub async fn get_response_ollama(request_body: OllamaRequest, chat: bool) -> Result<LLMResponse> {
+    request_ollama(request_body, chat).await
 }
 
-pub async fn request_ollama(request_body: OllamaRequest) -> Result<LLMResponse> {
+pub async fn request_ollama(request_body: OllamaRequest, chat: bool) -> Result<LLMResponse> {
     // check if url is connectable
     let client = reqwest::Client::new();
     let response = client
@@ -30,7 +30,11 @@ pub async fn request_ollama(request_body: OllamaRequest) -> Result<LLMResponse> 
 
     let client = reqwest::Client::new();
     let response = client
-        .post(format!("{}/api/generate", request_body.url))
+        .post(format!(
+            "{}/api/{}",
+            request_body.url,
+            if chat { "chat" } else { "generate" }
+        ))
         .json(&ConvertedOllamaRequest::from_ollama_request(
             request_body,
             false, // TODO! stream mode

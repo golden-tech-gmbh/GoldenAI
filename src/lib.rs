@@ -83,7 +83,8 @@ fn send<'p>(request_body: Bound<'p, PyAny>) -> PyResult<response::LLMResponse> {
             Err(e) => Err(PyException::new_err(e.to_string())),
         }
     } else if let Ok(ollama_req) = request_body.extract::<ollama::structs::OllamaRequest>() {
-        match ollama::ollama::get_response_ollama(ollama_req) {
+        match ollama::ollama::get_response_ollama(ollama_req, false) {
+            // NOTE! in send mode, chat mode is disabled
             Ok(response) => Ok(response),
             Err(e) => Err(PyException::new_err(e.to_string())),
         }
