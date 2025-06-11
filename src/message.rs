@@ -100,7 +100,7 @@ pub struct TextContent {
 #[pymethods]
 impl TextContent {
     #[new]
-    fn new(text: &str) -> Self {
+    pub fn new(text: &str) -> Self {
         Self {
             content_type: "text".to_string(),
             text: text.to_string(),

@@ -25,7 +25,7 @@ impl Usage {
     }
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 #[pyclass(dict, get_all, frozen)]
 pub(crate) struct LLMResponse {
     pub id: String,

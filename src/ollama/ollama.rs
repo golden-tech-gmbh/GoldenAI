@@ -9,7 +9,7 @@ pub async fn get_response_ollama(request_body: OllamaRequest) -> Result<LLMRespo
     request_ollama(request_body).await
 }
 
-async fn request_ollama(request_body: OllamaRequest) -> Result<LLMResponse> {
+pub async fn request_ollama(request_body: OllamaRequest) -> Result<LLMResponse> {
     // check if url is connectable
     let client = reqwest::Client::new();
     let response = client

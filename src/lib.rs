@@ -1,17 +1,17 @@
-mod message;
-mod response;
+pub mod message;
+pub mod response;
 
-mod openai {
+pub mod openai {
     pub mod openai;
     pub mod structs;
 }
 
-mod anthropic {
+pub mod anthropic {
     pub mod anthropic;
     pub mod structs;
 }
 
-mod ollama {
+pub mod ollama {
     pub mod ollama;
     pub mod structs;
 }
