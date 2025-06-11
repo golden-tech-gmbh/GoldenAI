@@ -76,7 +76,24 @@ def example_using_ollama():
     print(res)
 
 
+def example_chat_ollama():
+    from goldenai import Content, Message, OllamaRequest, send, LLMResponse, chat
+
+    content = Content.from_text("What is your name?")
+    message = Message(content=[content])
+    request = OllamaRequest(url="http://10.8.0.1:11434", model="qwen2.5vl:latest", messages=[message])
+    res: LLMResponse = send(request)  # the first request can be sent either in send mode or chat mode
+    print(res)
+    request.add_response(res)
+    content2 = Content.from_text("Please answer again in Chinese")
+    message2 = Message(content=[content2])
+    request.add_message(message2)  # MUST USE add_message to append messages in chat mode
+    res2: LLMResponse = chat(request)  # MUST USE chat to enable chat mode and understand the context
+    print(res2)
+
+
 if __name__ == "__main__":
     example_using_anthropic()
     example_using_openai()
     example_using_ollama()
+    example_chat_ollama()
