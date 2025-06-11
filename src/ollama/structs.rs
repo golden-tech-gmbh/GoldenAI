@@ -141,3 +141,40 @@ impl OllamaResponse {
         }
     }
 }
+
+#[derive(Deserialize)]
+pub struct OllamaChatMessage {
+    pub role: String,
+    pub content: String,
+    pub images: Option<Vec<String>>,
+}
+
+#[derive(Deserialize)]
+pub struct OllamaChatResponse {
+    pub model: SupportedModels,
+    pub created_at: String,
+    pub message: OllamaChatMessage,
+    pub done: bool,
+    pub done_reason: String,
+}
+
+impl OllamaChatResponse {
+    pub fn to_llm_response(self) -> LLMResponse {
+        LLMResponse {
+            id: "".to_string(),
+            model: self.model,
+            response_type: "text".to_string(),
+            usage: Usage {
+                input_tokens: 0,
+                output_tokens: 0,
+            },
+            role: Some(self.message.role),
+            content: Some(vec![ResponseAnthropic {
+                content_type: "text".to_string(),
+                text: self.message.content,
+            }]),
+            stop_reason: Some(self.done_reason),
+            choices: None,
+        }
+    }
+}

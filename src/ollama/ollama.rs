@@ -1,7 +1,9 @@
 use anyhow::{Result, anyhow};
 use std::time::Duration;
 
-use crate::ollama::structs::{ConvertedOllamaRequest, OllamaRequest, OllamaResponse};
+use crate::ollama::structs::{
+    ConvertedOllamaRequest, OllamaChatResponse, OllamaRequest, OllamaResponse,
+};
 use crate::response::LLMResponse;
 
 #[tokio::main]
@@ -43,11 +45,19 @@ pub async fn request_ollama(request_body: OllamaRequest, chat: bool) -> Result<L
         .await?;
 
     if response.status().is_success() {
-        // let response_text = response.text().await?;
-        // println!("Raw response: {}", response_text);
-        // let response: OllamaResponse = serde_json::from_str(&response_text)?;
-        let response: OllamaResponse = response.json().await?;
-        Ok(response.to_llm_response())
+        if chat {
+            // let response_text = response.text().await?;
+            // println!("Raw response: {}", response_text);
+            // let response: OllamaChatResponse = serde_json::from_str(&response_text)?;
+            let response: OllamaChatResponse = response.json().await?;
+            Ok(response.to_llm_response())
+        } else {
+            // let response_text = response.text().await?;
+            // println!("Raw response: {}", response_text);
+            // let response: OllamaResponse = serde_json::from_str(&response_text)?;
+            let response: OllamaResponse = response.json().await?;
+            Ok(response.to_llm_response())
+        }
     } else {
         let err_status = response.status();
         let error_text = response.text().await?;
