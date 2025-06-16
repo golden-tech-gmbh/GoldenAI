@@ -120,6 +120,18 @@ class AnthropicRequest:
 
     def __repr__(self) -> str: ...
 
+    def add_message(self, message: Message) -> None:
+        """
+        Append a message to the response that will be sent to the LLM in the chat mode.
+        :param message: The message to add.
+        """
+
+    def add_response(self, response: LLMResponse) -> None:
+        """
+        Append a response to the response that will be sent to the LLM in the chat mode.
+        :param response:
+        """
+
 
 class OpenAIRequest:
     model: str
@@ -147,6 +159,18 @@ class OpenAIRequest:
         ...
 
     def __repr__(self) -> str: ...
+
+    def add_message(self, message: Message) -> None:
+        """
+        Append a message to the response that will be sent to the LLM in the chat mode.
+        :param message: The message to add.
+        """
+
+    def add_response(self, response: LLMResponse) -> None:
+        """
+        Append a response to the response that will be sent to the LLM in the chat mode.
+        :param response:
+        """
 
 
 class OllamaRequest:

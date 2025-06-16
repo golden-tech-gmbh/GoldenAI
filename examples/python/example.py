@@ -43,9 +43,17 @@ def example_using_anthropic():
     print(res)
     print(res.cost())
 
+    # you can add further response and messages to the request for chat with context
+    request.add_response(res)
+    content2 = Content.from_text("Please answer again in English")
+    message2 = Message(content=[content2])
+    request.add_message(message2)
+    res2: LLMResponse = send(request_body=request)
+    print(res2)
+
 
 def example_using_openai():
-    from goldenai import Content, Message, OpenAIRequest, send, count_tokens
+    from goldenai import Content, Message, OpenAIRequest, send, count_tokens, LLMResponse
 
     content = Content.from_text("Hello, Claude!")
     content2 = Content.from_text("What is the day today?")
@@ -59,6 +67,14 @@ def example_using_openai():
 
     print(res)
     print(res.cost())
+
+    # you can add further response and messages to the request for chat with context
+    request.add_response(res)
+    content2 = Content.from_text("Please answer again in English")
+    message2 = Message(content=[content2])
+    request.add_message(message2)
+    res2: LLMResponse = send(request_body=request)
+    print(res2)
 
 
 def example_using_ollama():
