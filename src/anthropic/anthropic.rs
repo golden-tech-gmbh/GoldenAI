@@ -105,7 +105,7 @@ async fn count_tokens_anthropic(request_body: AnthropicRequest) -> Result<u32> {
 async fn test_request_anthropic() {
     use crate::message::{Content, ContentTypeInner, DocumentContent, TextContent};
 
-    let request_body = AnthropicRequest {
+    let mut request_body = AnthropicRequest {
         model: SupportedModels::from_str("claude-3-5-haiku-latest").unwrap(),
         max_tokens: 1024,
         messages: vec![Message {
@@ -125,14 +125,39 @@ async fn test_request_anthropic() {
         system: Some("Please answer in Chinese".to_string()),
     };
 
-    let input_tokens = count_tokens_anthropic(request_body.clone()).await.unwrap();
-    println!("Input tokens: {}", input_tokens);
+    println!(
+        "Input tokens: {}",
+        count_tokens_anthropic(request_body.clone()).await.unwrap()
+    );
 
-    let response = request_anthropic(request_body).await;
+    let response = request_anthropic(request_body.clone()).await;
     match response {
         Ok(res) => {
             println!("{}", res);
             println!("{:?}", res.cost().unwrap());
+            request_body.add_response(res.clone());
+            request_body.add_message(Message {
+                role: "user".to_string(),
+                content: vec![Content {
+                    ctx: ContentTypeInner::Text(TextContent {
+                        content_type: "text".to_string(),
+                        text: "I want you to answer the same question again but in English"
+                            .to_string(),
+                    }),
+                }],
+            });
+            println!(
+                "Input tokens 2: {}",
+                count_tokens_anthropic(request_body.clone()).await.unwrap()
+            );
+            let response = request_anthropic(request_body.clone()).await;
+            match response {
+                Ok(res) => {
+                    println!("{}", res);
+                    println!("{:?}", res.cost().unwrap());
+                }
+                Err(e) => println!("Error: {}", e),
+            }
         }
         Err(e) => println!("Error: {}", e),
     }

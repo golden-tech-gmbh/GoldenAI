@@ -2,7 +2,8 @@ use pyo3::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use crate::SupportedModels;
-use crate::message::Message;
+use crate::message::{Content, ContentTypeInner, Message, TextContent};
+use crate::response::LLMResponse;
 
 #[derive(Serialize, Clone, Debug)]
 #[pyclass(dict, get_all, set_all, subclass)]
@@ -33,6 +34,23 @@ impl AnthropicRequest {
 
     fn __repr__(&self) -> PyResult<String> {
         Ok(format!("{self:?}"))
+    }
+
+    pub fn add_response(&mut self, response: LLMResponse) {
+        // TODO! refactor is necessary
+        self.messages.push(Message {
+            role: response.role.unwrap(),
+            content: vec![Content {
+                ctx: ContentTypeInner::Text(TextContent {
+                    content_type: "text".to_string(),
+                    text: response.content.unwrap()[0].text.clone(),
+                }),
+            }],
+        });
+    }
+
+    pub fn add_message(&mut self, message: Message) {
+        self.messages.push(message);
     }
 }
 
