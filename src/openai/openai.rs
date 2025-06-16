@@ -85,7 +85,7 @@ async fn test_request_openai() {
     // for testing OpenAI, please always construct a request with new()
     // this will ensure the prompt is built correctly with messages
     // in Anthropic, the prompt is built alongside the messages, so this is not necessary
-    let request_body = OpenAIRequest::new(
+    let mut request_body = OpenAIRequest::new(
         "gpt-4.1-nano-2025-04-14",
         1024,
         vec![Message {
@@ -93,21 +93,45 @@ async fn test_request_openai() {
             content: vec![Content {
                 ctx: ContentTypeInner::Text(TextContent {
                     content_type: "text".to_string(),
-                    text: "Hello, Claude!".to_string(),
+                    text: "What's your name?".to_string(),
                 }),
             }],
         }],
         Some("Please answer in Chinese"),
     );
 
-    let input_tokens = count_tokens_openai(request_body.clone()).unwrap();
-    println!("Input tokens: {}", input_tokens);
+    println!(
+        "Input tokens: {}",
+        count_tokens_openai(request_body.clone()).unwrap()
+    );
 
-    let response = request_openai(request_body).await;
+    let response = request_openai(request_body.clone()).await;
     match response {
         Ok(res) => {
             println!("{}", res);
             println!("{:?}", res.cost().unwrap());
+            request_body.add_response(res).expect("TODO: panic message");
+            request_body.add_message(Message {
+                role: "user".to_string(),
+                content: vec![Content {
+                    ctx: ContentTypeInner::Text(TextContent {
+                        content_type: "text".to_string(),
+                        text: "Please answer the same question but in English again".to_string(),
+                    }),
+                }],
+            });
+            println!(
+                "Input tokens 2: {}",
+                count_tokens_openai(request_body.clone()).unwrap()
+            );
+            let new_response = request_openai(request_body).await;
+            match new_response {
+                Ok(new_res) => {
+                    println!("{}", new_res);
+                    println!("{:?}", new_res.cost().unwrap());
+                }
+                Err(e) => println!("Error: {}", e),
+            }
         }
         Err(e) => println!("Error: {}", e),
     }

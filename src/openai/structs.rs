@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::SupportedModels;
 use crate::message::{Content, ContentTypeInner, Message, TextContent};
+use crate::response::LLMResponse;
 
 #[derive(Serialize, Clone, Debug)]
 #[pyclass(dict, get_all, set_all, subclass)]
@@ -45,6 +46,39 @@ impl OpenAIRequest {
 
     fn __repr__(&self) -> PyResult<String> {
         Ok(format!("{self:?}"))
+    }
+
+    pub fn add_response(&mut self, response: LLMResponse) -> PyResult<()> {
+        let resp = match response.choices.is_some() {
+            true => response.choices.unwrap(),
+            false => {
+                return Err(pyo3::exceptions::PyValueError::new_err(
+                    "No choices in response",
+                ));
+            }
+        };
+
+        if resp.len() != 1 {
+            return Err(pyo3::exceptions::PyValueError::new_err(
+                "More than one choice in response",
+            ));
+        }
+
+        self.messages.push(Message {
+            role: resp[0].message.role.clone(),
+            content: vec![Content {
+                ctx: ContentTypeInner::Text(TextContent {
+                    content_type: "text".to_string(),
+                    text: resp[0].message.content.clone(),
+                }),
+            }],
+        });
+
+        Ok(())
+    }
+
+    pub fn add_message(&mut self, message: Message) {
+        self.messages.push(message);
     }
 }
 
