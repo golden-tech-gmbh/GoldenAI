@@ -17,14 +17,26 @@ pub fn get_count_tokens_openai(request_body: OpenAIRequest) -> Result<u32> {
 }
 
 async fn request_openai(request_body: OpenAIRequest) -> Result<LLMResponse> {
-    let api_key = env::var("OPENAI_API_KEY").unwrap_or("".to_string());
+    let endpoint = match &request_body.endpoint {
+        Some(endpoint) => endpoint.clone(),
+        None => "https://api.openai.com/v1/responses".to_string(),
+    };
+
+    let api_key = {
+        if endpoint.contains("azure") {
+            env::var("AZURE_OPENAI_API_KEY").unwrap_or("".to_string())
+        } else {
+            env::var("OPENAI_API_KEY").unwrap_or("".to_string())
+        }
+    };
+
     if api_key.is_empty() {
-        return Err(anyhow!("OPENAI_API_KEY environment variable must be set"));
+        return Err(anyhow!("OpenAI API key must be set"));
     }
 
     let client = reqwest::Client::new();
     let response = client
-        .post("https://api.openai.com/v1/responses")
+        .post(endpoint)
         .header("content-type", "application/json")
         .header("Authorization", format!("Bearer {}", api_key))
         .json(&request_body)

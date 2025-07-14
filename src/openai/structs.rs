@@ -12,13 +12,19 @@ pub struct OpenAIRequest {
     #[serde(skip)]
     pub(crate) system: Option<String>,
     pub(crate) input: Vec<Message>,
+    pub(crate) endpoint: Option<String>,
 }
 
 #[pymethods]
 impl OpenAIRequest {
     #[new]
-    #[pyo3(signature = (model,messages,prompt=None))]
-    pub fn new(model: &str, messages: Vec<Message>, prompt: Option<&str>) -> Self {
+    #[pyo3(signature = (model,messages,prompt=None,endpoint=None))]
+    pub fn new(
+        model: &str,
+        messages: Vec<Message>,
+        prompt: Option<&str>,
+        endpoint: Option<&str>,
+    ) -> Self {
         let modified_messages = messages
             .into_iter()
             .map(|mut msg| {
@@ -51,6 +57,7 @@ impl OpenAIRequest {
                 None => modified_messages,
             },
             system: None,
+            endpoint: endpoint.map(|s| s.to_string()),
         }
     }
 
