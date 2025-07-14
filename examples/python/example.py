@@ -118,7 +118,7 @@ def example_chat_ollama():
 
 
 if __name__ == "__main__":
-    # example_using_anthropic()
+    example_using_anthropic()
     example_using_openai()
     # example_using_ollama()
     # example_chat_ollama()
