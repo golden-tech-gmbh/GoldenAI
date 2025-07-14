@@ -24,7 +24,8 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 #[pyclass(eq, eq_int)]
 #[derive(PartialEq, Clone, Debug)]
 pub enum SupportedModels {
-    GPT41Nano20250414,
+    GPT41Nano,
+    GPT41,
     Claude35HaikuLatest,
     Qwen25VL,
 }
@@ -51,7 +52,8 @@ impl<'de> Deserialize<'de> for SupportedModels {
 impl SupportedModels {
     fn to_str(&self) -> &'static str {
         match self {
-            SupportedModels::GPT41Nano20250414 => "gpt-4.1-nano-2025-04-14",
+            SupportedModels::GPT41Nano => "gpt-4.1-nano-2025-04-14",
+            SupportedModels::GPT41 => "gpt-4.1-2025-04-14",
             SupportedModels::Claude35HaikuLatest => "claude-3-5-haiku-latest",
             SupportedModels::Qwen25VL => "qwen2.5vl:latest",
         }
@@ -59,7 +61,10 @@ impl SupportedModels {
 
     fn from_str(model: &str) -> Result<SupportedModels> {
         match model {
-            "gpt-4.1-nano-2025-04-14" => Ok(SupportedModels::GPT41Nano20250414),
+            "gpt-4.1-nano-2025-04-14" => Ok(SupportedModels::GPT41Nano),
+            "gpt-4.1-nano" => Ok(SupportedModels::GPT41Nano),
+            "gpt-4.1-2025-04-14" => Ok(SupportedModels::GPT41),
+            "gpt-4.1" => Ok(SupportedModels::GPT41),
             "claude-3-5-haiku-latest" => Ok(SupportedModels::Claude35HaikuLatest),
             "claude-3-5-haiku-20241022" => Ok(SupportedModels::Claude35HaikuLatest),
             "qwen2.5vl:latest" => Ok(SupportedModels::Qwen25VL),
