@@ -87,7 +87,12 @@ impl OpenAIRequest {
         Ok(())
     }
 
-    pub fn add_message(&mut self, message: Message) {
+    pub fn add_message(&mut self, mut message: Message) {
+        for content in &mut message.content {
+            if let ContentTypeInner::Text(ref mut text_content) = content.ctx {
+                text_content.content_type = "input_text".to_string();
+            }
+        }
         self.input.push(message);
     }
 }
