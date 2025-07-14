@@ -112,7 +112,9 @@ async fn test_request_anthropic() {
             role: "user".to_string(),
             content: vec![
                 Content {
-                    ctx: ContentTypeInner::Document(DocumentContent::new("test.pdf").unwrap()),
+                    ctx: ContentTypeInner::Document(
+                        DocumentContent::new("test.pdf", None).unwrap(),
+                    ),
                 },
                 Content {
                     ctx: ContentTypeInner::Text(TextContent {
