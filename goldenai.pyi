@@ -135,14 +135,12 @@ class AnthropicRequest:
 
 class OpenAIRequest:
     model: str
-    max_tokens: int
     messages: List[Message]
     prompt: str | None
 
     def __init__(
             self,
             model: str,
-            max_tokens: int,
             messages: List[Message],
             prompt: str | None = None,
     ) -> None:
@@ -151,7 +149,6 @@ class OpenAIRequest:
 
         Args:
             model (str): The name of the AI model to use.
-            max_tokens (int): The maximum number of tokens the AI model should generate.
             messages (List[Message]): The conversation history.
             prompt (str | None, optional): The initial prompt for the AI model.
                 Defaults to None.
