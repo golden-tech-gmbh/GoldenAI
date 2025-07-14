@@ -19,7 +19,7 @@ impl OpenAIRequest {
     #[new]
     #[pyo3(signature = (model,messages,prompt=None))]
     pub fn new(model: &str, messages: Vec<Message>, prompt: Option<&str>) -> Self {
-        let mut modified_messages = messages
+        let modified_messages = messages
             .into_iter()
             .map(|mut msg| {
                 for content in &mut msg.content {
