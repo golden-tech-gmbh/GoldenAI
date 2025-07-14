@@ -57,13 +57,17 @@ def example_using_anthropic():
 def example_using_openai():
     from goldenai import Content, Message, OpenAIRequest, send, count_tokens, LLMResponse
 
-    content = Content.from_text("Hello, Claude!")
-    content2 = Content.from_text("What is the day today?")
-    message = Message(content=[content, content2])
-    request = OpenAIRequest(model="gpt-4.1-nano-2025-04-14", max_tokens=1024, messages=[message],
-                            prompt="Please answer in Chinese")
+    content = Content.from_text("Hello, OpenAI!")
+    content2 = Content.from_text("What does this document say?")
+    # for OpenAI, you need to construct a document content with llm parameter
+    # And for know, it is only possible to process pdf files
+    content3 = Content.from_document("examples/python/test.pdf", llm="gpt-4.1-nano-2025-04-14")
 
-    print(count_tokens(request))
+    message = Message(content=[content, content2, content3])
+    request = OpenAIRequest(model="gpt-4.1-nano-2025-04-14", messages=[message],
+                            # no max_tokens option for OpenAI
+                            prompt="Please answer in Chinese"  # optional
+                            )
 
     res = send(request)
 
