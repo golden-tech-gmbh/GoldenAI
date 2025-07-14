@@ -62,12 +62,13 @@ class Content:
         ...
 
     @classmethod
-    def from_document(cls: Type["Content"], path: str) -> "Content":
+    def from_document(cls: Type["Content"], path: str, llm: str | None = None) -> "Content":
         """
         Create a Content object from a document.
 
         Args:
             path (str): The path to the document to create the Content object from.
+            llm (SupportedModels str | None, optional): The language model to use, defaults to None, which uses Claude 35.
 
         Returns:
             Content: The Content object created from the document.

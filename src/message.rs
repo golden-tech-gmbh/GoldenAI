@@ -225,13 +225,14 @@ impl Content {
     }
 
     #[classmethod]
-    fn from_document<'p>(
-        _cls: Bound<'p, PyType>,
-        path: &str,
-        llm: SupportedModels,
-    ) -> PyResult<Self> {
+    #[pyo3(signature = (path, llm=None))]
+    fn from_document<'p>(_cls: Bound<'p, PyType>, path: &str, llm: Option<&str>) -> PyResult<Self> {
+        let _llm = Some(match llm {
+            None => SupportedModels::Claude35HaikuLatest,
+            _ => SupportedModels::from_str(llm.unwrap()).unwrap(),
+        });
         Ok(Self {
-            ctx: ContentTypeInner::Document(DocumentContent::new(path, Some(llm))?),
+            ctx: ContentTypeInner::Document(DocumentContent::new(path, _llm)?),
         })
     }
 
