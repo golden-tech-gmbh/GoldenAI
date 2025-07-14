@@ -52,8 +52,8 @@ impl<'de> Deserialize<'de> for SupportedModels {
 impl SupportedModels {
     fn to_str(&self) -> &'static str {
         match self {
-            SupportedModels::GPT41Nano => "gpt-4.1-nano-2025-04-14",
-            SupportedModels::GPT41 => "gpt-4.1-2025-04-14",
+            SupportedModels::GPT41Nano => "gpt-4.1-nano",
+            SupportedModels::GPT41 => "gpt-4.1",
             SupportedModels::Claude35HaikuLatest => "claude-3-5-haiku-latest",
             SupportedModels::Qwen25VL => "qwen2.5vl:latest",
         }
