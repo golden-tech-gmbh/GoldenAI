@@ -108,17 +108,24 @@ async fn test_request_openai() {
                 Content {
                     ctx: ContentTypeInner::Text(TextContent {
                         content_type: "input_text".to_string(),
-                        text: "What's the recipient address?".to_string(),
+                        text: "What does the document say?".to_string(),
                     }),
                 },
                 Content {
                     ctx: ContentTypeInner::Document(
-                        DocumentContent::new("test.pdf", Some(SupportedModels::GPT41Nano)).unwrap(),
+                        DocumentContent::new(
+                            "examples/python/test.pdf",
+                            Some(SupportedModels::GPT41Nano),
+                        )
+                        .unwrap(),
                     ),
                 },
             ],
         }],
         Some("Please answer in Chinese"),
+        Some(
+            "https://goldenai.openai.azure.com/openai/deployments/gpt-4.1-nano/chat/completions?api-version=2025-01-01-preview",
+        ),
     );
 
     println!(
