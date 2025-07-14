@@ -123,9 +123,7 @@ async fn test_request_openai() {
             ],
         }],
         Some("Please answer in Chinese"),
-        Some(
-            "https://goldenai.openai.azure.com/openai/deployments/gpt-4.1-nano/chat/completions?api-version=2025-01-01-preview",
-        ),
+        Some("https://goldenaifr.openai.azure.com/openai/v1/responses?api-version=preview"),
     );
 
     println!(
