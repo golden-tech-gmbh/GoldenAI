@@ -1,3 +1,4 @@
+use crate::SupportedModels;
 use base64::Engine;
 use pyo3::exceptions::{PyException, PyTypeError};
 use pyo3::prelude::PyAnyMethods;
@@ -28,14 +29,23 @@ impl DocumentSourceContent {
 pub struct DocumentContent {
     // Anthropic schema
     #[serde(rename = "type")]
-    pub(crate) content_type: String, // "image"
-    pub(crate) source: DocumentSourceContent,
+    pub content_type: String, // "image" (Anthropic) or "input_file" (OpenAI)
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub source: Option<DocumentSourceContent>, // Anthropic
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub file_data: Option<String>, // OpenAI
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub filename: Option<String>, // OpenAI
 }
 
 #[pymethods]
 impl DocumentContent {
     #[new]
-    pub fn new(path: &str) -> PyResult<Self> {
+    #[pyo3(signature = (path, llm=None))]
+    pub fn new(path: &str, llm: Option<SupportedModels>) -> PyResult<Self> {
         let path = PathBuf::from(path);
 
         // Get file extension and convert to lowercase for case-insensitive matching
@@ -69,19 +79,62 @@ impl DocumentContent {
             }
         };
 
+        let file_name = path
+            .file_name()
+            .and_then(|s| s.to_str())
+            .map(|s| s.to_string())
+            .unwrap();
+
         // Read file and encode as base64
         let data = std::fs::read(&path)
             .map_err(|e| PyException::new_err(format!("Failed to read file: {}", e)))?;
         let data = base64::engine::general_purpose::STANDARD.encode(&data);
 
-        Ok(Self {
-            content_type: content_type.to_string(),
-            source: DocumentSourceContent {
-                content_type: "base64".to_string(),
-                media_type: media_type.to_string(),
-                data: data.to_string(),
+        match llm {
+            Some(models) => match models {
+                SupportedModels::Claude35HaikuLatest => Ok(Self {
+                    content_type: content_type.to_string(),
+                    source: Some(DocumentSourceContent {
+                        content_type: "base64".to_string(),
+                        media_type: media_type.to_string(),
+                        data: data.to_string(),
+                    }),
+                    file_data: None,
+                    filename: None,
+                }),
+                SupportedModels::GPT41Nano => Ok(Self {
+                    content_type: {
+                        if content_type == "document" {
+                            "input_file".to_string()
+                        } else if content_type == "image" {
+                            "input_image".to_string()
+                        } else {
+                            content_type.to_string()
+                        }
+                    },
+                    source: None,
+                    file_data: Some(format!("data:{};base64,{}", media_type, data.to_string())),
+                    filename: Some(file_name),
+                }),
+
+                _ => Err(PyException::new_err(
+                    "Unsupported LLM for processing document",
+                )),
             },
-        })
+            None => {
+                // default using Claude
+                Ok(Self {
+                    content_type: content_type.to_string(),
+                    source: Some(DocumentSourceContent {
+                        content_type: "base64".to_string(),
+                        media_type: media_type.to_string(),
+                        data: data.to_string(),
+                    }),
+                    file_data: None,
+                    filename: None,
+                })
+            }
+        }
     }
 
     fn __repr__(&self) -> PyResult<String> {
@@ -100,10 +153,23 @@ pub struct TextContent {
 #[pymethods]
 impl TextContent {
     #[new]
-    pub fn new(text: &str) -> Self {
-        Self {
-            content_type: "text".to_string(),
-            text: text.to_string(),
+    #[pyo3(signature = (text, llm=None))]
+    pub fn new(text: &str, llm: Option<SupportedModels>) -> Self {
+        match llm {
+            Some(models) => match models {
+                SupportedModels::GPT41Nano => Self {
+                    content_type: "input_text".to_string(),
+                    text: text.to_string(),
+                },
+                _ => Self {
+                    content_type: "text".to_string(),
+                    text: text.to_string(),
+                },
+            },
+            None => Self {
+                content_type: "text".to_string(),
+                text: text.to_string(),
+            },
         }
     }
 
@@ -173,9 +239,13 @@ impl Content {
     }
 
     #[classmethod]
-    fn from_document<'p>(_cls: Bound<'p, PyType>, path: &str) -> PyResult<Self> {
+    fn from_document<'p>(
+        _cls: Bound<'p, PyType>,
+        path: &str,
+        llm: SupportedModels,
+    ) -> PyResult<Self> {
         Ok(Self {
-            ctx: ContentTypeInner::Document(DocumentContent::new(path)?),
+            ctx: ContentTypeInner::Document(DocumentContent::new(path, Some(llm))?),
         })
     }
 

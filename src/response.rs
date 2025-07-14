@@ -38,7 +38,7 @@ pub struct LLMResponse {
     pub content: Option<Vec<ResponseAnthropic>>, // Anthropic
     pub stop_reason: Option<String>,             // Anthropic
 
-    pub choices: Option<Vec<ResponseChoiceOpenAI>>, // OpenAI
+    pub output: Option<Vec<ResponseChoiceOpenAI>>, // OpenAI
 }
 
 #[pymethods]
@@ -63,8 +63,8 @@ impl LLMResponse {
             None => {
                 // OpenAI response
                 let mut content = String::new();
-                for choice in self.choices.as_ref().unwrap() {
-                    content.push_str(&choice.message.content);
+                for choice in self.output.as_ref().unwrap() {
+                    content.push_str(&choice.content[0].text); // TODO! Risky
                 }
                 content
             }
@@ -109,8 +109,8 @@ impl std::fmt::Display for LLMResponse {
             None => {
                 // OpenAI response
                 let mut content = String::new();
-                for choice in self.choices.as_ref().unwrap() {
-                    content.push_str(&choice.message.content);
+                for choice in self.output.as_ref().unwrap() {
+                    content.push_str(&choice.content[0].text); // TODO! Risky
                 }
                 content
             }

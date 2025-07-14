@@ -24,7 +24,7 @@ async fn request_openai(request_body: OpenAIRequest) -> Result<LLMResponse> {
 
     let client = reqwest::Client::new();
     let response = client
-        .post("https://api.openai.com/v1/chat/completions")
+        .post("https://api.openai.com/v1/responses")
         .header("content-type", "application/json")
         .header("Authorization", format!("Bearer {}", api_key))
         .json(&request_body)
@@ -56,7 +56,7 @@ fn count_tokens_openai(request_body: OpenAIRequest) -> Result<u32> {
 
     let mut messages: Vec<ChatCompletionRequestMessage> = Vec::new();
 
-    for each_message in request_body.messages.iter() {
+    for each_message in request_body.input.iter() {
         let message = ChatCompletionRequestMessage {
             role: each_message.role.clone(),
             content: each_message
@@ -64,6 +64,9 @@ fn count_tokens_openai(request_body: OpenAIRequest) -> Result<u32> {
                 .iter()
                 .map(|content| match &content.ctx {
                     ContentTypeInner::Text(text) => Some(text.text.clone()),
+                    ContentTypeInner::Document(document) => {
+                        Some(document.clone().file_data.unwrap())
+                    }
                     _ => panic!("Invalid content type"),
                 })
                 .collect(),
@@ -80,22 +83,29 @@ fn count_tokens_openai(request_body: OpenAIRequest) -> Result<u32> {
 
 #[tokio::test]
 async fn test_request_openai() {
-    use crate::message::{Content, ContentTypeInner, Message, TextContent};
+    use crate::SupportedModels;
+    use crate::message::{Content, ContentTypeInner, DocumentContent, Message, TextContent};
 
     // for testing OpenAI, please always construct a request with new()
     // this will ensure the prompt is built correctly with messages
     // in Anthropic, the prompt is built alongside the messages, so this is not necessary
     let mut request_body = OpenAIRequest::new(
         "gpt-4.1-nano-2025-04-14",
-        1024,
         vec![Message {
             role: "user".to_string(),
-            content: vec![Content {
-                ctx: ContentTypeInner::Text(TextContent {
-                    content_type: "text".to_string(),
-                    text: "What's your name?".to_string(),
-                }),
-            }],
+            content: vec![
+                Content {
+                    ctx: ContentTypeInner::Text(TextContent {
+                        content_type: "input_text".to_string(),
+                        text: "What's the recipient address?".to_string(),
+                    }),
+                },
+                Content {
+                    ctx: ContentTypeInner::Document(
+                        DocumentContent::new("test.pdf", Some(SupportedModels::GPT41Nano)).unwrap(),
+                    ),
+                },
+            ],
         }],
         Some("Please answer in Chinese"),
     );
@@ -115,7 +125,7 @@ async fn test_request_openai() {
                 role: "user".to_string(),
                 content: vec![Content {
                     ctx: ContentTypeInner::Text(TextContent {
-                        content_type: "text".to_string(),
+                        content_type: "input_text".to_string(),
                         text: "Please answer the same question but in English again".to_string(),
                     }),
                 }],

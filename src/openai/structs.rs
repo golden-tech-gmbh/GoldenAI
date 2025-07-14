@@ -11,26 +11,24 @@ pub struct OpenAIRequest {
     pub(crate) model: SupportedModels,
     #[serde(skip)]
     pub(crate) system: Option<String>,
-    pub(crate) max_tokens: u32,
-    pub(crate) messages: Vec<Message>,
+    pub(crate) input: Vec<Message>,
 }
 
 #[pymethods]
 impl OpenAIRequest {
     #[new]
-    #[pyo3(signature = (model, max_tokens,messages,prompt=None))]
-    pub fn new(model: &str, max_tokens: u32, messages: Vec<Message>, prompt: Option<&str>) -> Self {
+    #[pyo3(signature = (model,messages,prompt=None))]
+    pub fn new(model: &str, messages: Vec<Message>, prompt: Option<&str>) -> Self {
         Self {
             model: SupportedModels::from_str(model).unwrap(),
-            max_tokens,
-            messages: match prompt {
+            input: match prompt {
                 Some(p) => {
                     let mut new_messages = Vec::new();
                     new_messages.push(Message {
                         role: "developer".to_string(),
                         content: vec![Content {
                             ctx: ContentTypeInner::Text(TextContent {
-                                content_type: "text".to_string(),
+                                content_type: "input_text".to_string(),
                                 text: p.to_string(),
                             }),
                         }],
@@ -49,8 +47,8 @@ impl OpenAIRequest {
     }
 
     pub fn add_response(&mut self, response: LLMResponse) -> PyResult<()> {
-        let resp = match response.choices.is_some() {
-            true => response.choices.unwrap(),
+        let resp = match response.output.is_some() {
+            true => response.output.unwrap(),
             false => {
                 return Err(pyo3::exceptions::PyValueError::new_err(
                     "No choices in response",
@@ -60,16 +58,16 @@ impl OpenAIRequest {
 
         if resp.len() != 1 {
             return Err(pyo3::exceptions::PyValueError::new_err(
-                "More than one choice in response",
+                "More than one output in response",
             ));
         }
 
-        self.messages.push(Message {
-            role: resp[0].message.role.clone(),
+        self.input.push(Message {
+            role: resp[0].role.clone(), // TODO! Risky
             content: vec![Content {
                 ctx: ContentTypeInner::Text(TextContent {
-                    content_type: "text".to_string(),
-                    text: resp[0].message.content.clone(),
+                    content_type: "output_text".to_string(),
+                    text: resp[0].content[0].text.clone(), // TODO! Risky
                 }),
             }],
         });
@@ -78,41 +76,42 @@ impl OpenAIRequest {
     }
 
     pub fn add_message(&mut self, message: Message) {
-        self.messages.push(message);
+        self.input.push(message);
     }
 }
 
 #[derive(Deserialize, Debug, Clone)]
 #[pyclass(dict, get_all, set_all)]
 pub struct ResponseMsgOpenAI {
-    pub role: String,
-    pub content: String,
+    #[serde(rename = "type")]
+    pub response_type: String,
+    pub text: String,
 }
 
 #[pymethods]
 impl ResponseMsgOpenAI {
     fn __repr__(&self) -> PyResult<String> {
-        Ok(format!(
-            "ResponseMsgOpenAI<role={:?},content={:?}>",
-            self.role, self.content
-        ))
+        Ok(format!("ResponseMsgOpenAI<content={:?}>", self.text))
     }
 }
 
 #[derive(Deserialize, Debug, Clone)]
 #[pyclass(dict, get_all, set_all)]
 pub struct ResponseChoiceOpenAI {
-    pub index: u32,
-    pub message: ResponseMsgOpenAI,
-    pub finish_reason: Option<String>,
+    pub id: String,
+    #[serde(rename = "type")]
+    pub response_type: String,
+    pub status: String,
+    pub role: String,
+    pub content: Vec<ResponseMsgOpenAI>,
 }
 
 #[pymethods]
 impl ResponseChoiceOpenAI {
     fn __repr__(&self) -> PyResult<String> {
         Ok(format!(
-            "ResponseChoiceOpenAI<index={:?},message={:?},finish_reason={:?}>",
-            self.index, self.message, self.finish_reason
+            "ResponseChoiceOpenAI<id={:?},message={:?},status={:?}>",
+            self.id, self.content, self.status
         ))
     }
 }
