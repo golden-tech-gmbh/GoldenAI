@@ -67,7 +67,6 @@ fn count_tokens_openai(request_body: OpenAIRequest) -> Result<u32> {
                     ContentTypeInner::Document(document) => {
                         Some(document.clone().file_data.unwrap())
                     }
-                    _ => panic!("Invalid content type"),
                 })
                 .collect(),
             name: None,
