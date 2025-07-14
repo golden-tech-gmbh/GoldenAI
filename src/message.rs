@@ -48,6 +48,14 @@ impl DocumentContent {
     pub fn new(path: &str, llm: Option<SupportedModels>) -> PyResult<Self> {
         let path = PathBuf::from(path);
 
+        // Check if file exists
+        if !path.exists() {
+            return Err(PyTypeError::new_err(format!(
+                "File not found: {}",
+                path.to_string_lossy()
+            )));
+        }
+
         // Get file extension and convert to lowercase for case-insensitive matching
         let ext = path
             .extension()
