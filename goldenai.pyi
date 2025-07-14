@@ -138,12 +138,14 @@ class OpenAIRequest:
     model: str
     messages: List[Message]
     prompt: str | None
+    endpoint: str | None
 
     def __init__(
             self,
             model: str,
             messages: List[Message],
             prompt: str | None = None,
+            endpoint: str | None = None
     ) -> None:
         """
         Initialize an OpenAIRequest object.
@@ -153,6 +155,8 @@ class OpenAIRequest:
             messages (List[Message]): The conversation history.
             prompt (str | None, optional): The initial prompt for the AI model.
                 Defaults to None.
+            endpoint (str | None, optional): The endpoint to use for the OpenAI API.
+                Defaults to None, which uses the default OpenAI endpoint.
         """
         ...
 

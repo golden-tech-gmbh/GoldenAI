@@ -55,6 +55,7 @@ def example_using_anthropic():
 
 
 def example_using_openai():
+    import os
     from goldenai import Content, Message, OpenAIRequest, send, count_tokens, LLMResponse
 
     content = Content.from_text("Hello, OpenAI!")
@@ -66,7 +67,9 @@ def example_using_openai():
     message = Message(content=[content, content2, content3])
     request = OpenAIRequest(model="gpt-4.1-nano-2025-04-14", messages=[message],
                             # no max_tokens option for OpenAI
-                            prompt="Please answer in Chinese"  # optional
+                            prompt="Please answer in Chinese",  # optional
+                            endpoint=f"https://{os.getenv('AZURE_RESOURCE_NAME')}.openai.azure.com/openai/v1/responses?api-version=preview"
+                            # optional, here is an example using model provided by Azure, NOTE: only support 'responses' endpoint
                             )
 
     res = send(request)
@@ -115,7 +118,7 @@ def example_chat_ollama():
 
 
 if __name__ == "__main__":
-    example_using_anthropic()
+    # example_using_anthropic()
     example_using_openai()
-    example_using_ollama()
-    example_chat_ollama()
+    # example_using_ollama()
+    # example_chat_ollama()
