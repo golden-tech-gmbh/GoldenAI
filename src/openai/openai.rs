@@ -34,6 +34,12 @@ async fn request_openai(request_body: OpenAIRequest) -> Result<LLMResponse> {
         return Err(anyhow!("OpenAI API key must be set"));
     }
 
+    // For debugging (review the request body)
+    // let json_string = serde_json::to_string_pretty(&request_body)
+    //     .unwrap_or_else(|_| format!("{:?}", request_body));
+    // println!("{}", json_string);
+    // return Err(anyhow!("Debugging"));
+
     let client = reqwest::Client::new();
     let response = client
         .post(endpoint)
