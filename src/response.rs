@@ -78,9 +78,12 @@ impl LLMResponse {
         if self.model.to_str() == "claude-3-5-haiku-latest" {
             input = 0.8;
             output = 4.0;
-        } else if self.model.to_str() == "gpt-4.1-nano-2025-04-14" {
+        } else if self.model.to_str() == "gpt-4.1-nano" {
             input = 0.1;
             output = 0.4;
+        } else if self.model.to_str() == "gpt-4.1" {
+            input = 1.7;
+            output = 6.84;
         } else {
             return Err(PyTypeError::new_err("Unsupported model"));
         }
