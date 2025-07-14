@@ -9,9 +9,10 @@ use crate::response::LLMResponse;
 #[pyclass(dict, get_all, set_all, subclass)]
 pub struct OpenAIRequest {
     pub(crate) model: SupportedModels,
+    pub(crate) input: Vec<Message>,
     #[serde(skip)]
     pub(crate) system: Option<String>,
-    pub(crate) input: Vec<Message>,
+    #[serde(skip)]
     pub(crate) endpoint: Option<String>,
 }
 
