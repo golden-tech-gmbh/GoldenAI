@@ -1,6 +1,6 @@
 [package]
 name = "goldenai"
-version = "0.1.6"
+version = "0.2.0"
 edition = "2024"
 description = "GoldenTech AI Python SDK. Powered by Rust PyO3, OpenAI, Anthropic and Ollama."
 authors = ["Guangyu He <guangyu.he@golden-tech.de>"]
