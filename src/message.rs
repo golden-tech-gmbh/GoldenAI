@@ -153,24 +153,12 @@ pub struct TextContent {
 #[pymethods]
 impl TextContent {
     #[new]
-    #[pyo3(signature = (text, llm=None))]
-    pub fn new(text: &str, llm: Option<SupportedModels>) -> Self {
-        match llm {
-            Some(models) => match models {
-                SupportedModels::GPT41Nano => Self {
-                    content_type: "input_text".to_string(),
-                    text: text.to_string(),
-                },
-                _ => Self {
-                    content_type: "text".to_string(),
-                    text: text.to_string(),
-                },
-            },
-            None => Self {
-                content_type: "text".to_string(),
-                text: text.to_string(),
-            },
-        }
+    #[pyo3(signature = (text))]
+    pub fn new(text: &str) -> PyResult<Self> {
+        Ok(TextContent {
+            content_type: "text".to_string(),
+            text: text.to_string(),
+        })
     }
 
     fn __repr__(&self) -> PyResult<String> {
@@ -229,12 +217,10 @@ impl Content {
     }
 
     #[classmethod]
+    #[pyo3(signature = (text))]
     fn from_text(_cls: Bound<'_, PyType>, text: &str) -> PyResult<Self> {
         Ok(Self {
-            ctx: ContentTypeInner::Text(TextContent {
-                content_type: "text".to_string(),
-                text: text.to_string(),
-            }),
+            ctx: ContentTypeInner::Text(TextContent::new(text)?),
         })
     }
 

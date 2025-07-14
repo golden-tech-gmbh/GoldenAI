@@ -19,6 +19,18 @@ impl OpenAIRequest {
     #[new]
     #[pyo3(signature = (model,messages,prompt=None))]
     pub fn new(model: &str, messages: Vec<Message>, prompt: Option<&str>) -> Self {
+        let mut modified_messages = messages
+            .into_iter()
+            .map(|mut msg| {
+                for content in &mut msg.content {
+                    if let ContentTypeInner::Text(ref mut text_content) = content.ctx {
+                        text_content.content_type = "input_text".to_string();
+                    }
+                }
+                msg
+            })
+            .collect::<Vec<Message>>();
+
         Self {
             model: SupportedModels::from_str(model).unwrap(),
             input: match prompt {
@@ -33,10 +45,10 @@ impl OpenAIRequest {
                             }),
                         }],
                     });
-                    new_messages.extend(messages);
+                    new_messages.extend(modified_messages);
                     new_messages
                 }
-                None => messages,
+                None => modified_messages,
             },
             system: None,
         }
