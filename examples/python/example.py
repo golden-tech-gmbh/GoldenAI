@@ -30,8 +30,10 @@ def example_using_anthropic():
     message = Message(content=[content, content2, content3])
 
     # contruct a request
-    request = AnthropicRequest(model="claude-3-5-haiku-latest", max_tokens=1024, messages=[message],
-                               prompt="Please answer in Chinese")
+    request = AnthropicRequest(model="claude-3-5-haiku-latest", messages=[message],
+                               max_tokens=1024,  # optional
+                               prompt="Please answer in Chinese"  # optional
+                               )
 
     # count the tokens
     print(count_tokens(request))

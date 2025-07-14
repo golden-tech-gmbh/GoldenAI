@@ -102,8 +102,8 @@ class AnthropicRequest:
     def __init__(
             self,
             model: str,
-            max_tokens: int,
             messages: List[Message],
+            max_tokens: int | None = 1024,
             prompt: str | None = None,
     ) -> None:
         """
@@ -111,8 +111,8 @@ class AnthropicRequest:
 
         Args:
             model (str): The name of the AI model to use.
-            max_tokens (int): The maximum number of tokens the AI model should generate.
             messages (List[Message]): The conversation history.
+            max_tokens (int | None, optional): The maximum number of tokens to generate.
             prompt (str | None, optional): The initial prompt for the AI model.
                 Defaults to None.
         """

@@ -17,13 +17,15 @@ pub struct AnthropicRequest {
 #[pymethods]
 impl AnthropicRequest {
     #[new]
-    #[pyo3(signature = (model, max_tokens,messages,prompt=None))]
+    #[pyo3(signature = (model,messages,max_tokens=1024,prompt=None))]
     fn new(
         model: &str,
-        max_tokens: u32,
         messages: Vec<Message>,
+        max_tokens: Option<u32>,
         prompt: Option<&str>,
     ) -> PyResult<Self> {
+        
+        let max_tokens = max_tokens.unwrap_or(1024);
         Ok(Self {
             model: SupportedModels::from_str(model).unwrap(),
             max_tokens,
