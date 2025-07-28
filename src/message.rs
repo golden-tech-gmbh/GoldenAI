@@ -110,7 +110,7 @@ impl DocumentContent {
                     file_data: None,
                     filename: None,
                 }),
-                SupportedModels::GPT41Nano => Ok(Self {
+                SupportedModels::GPT41Nano | SupportedModels::GPT41 => Ok(Self {
                     content_type: {
                         if content_type == "document" {
                             "input_file".to_string()
