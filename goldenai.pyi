@@ -68,7 +68,7 @@ class Content:
 
         Args:
             path (str): The path to the document to create the Content object from.
-            llm (SupportedModels str | None, optional): The language model to use, defaults to None, which uses Claude 35.
+            llm (SupportedModels str | None, optional): The language model to use, defaults to None, which will use the GPT41Nano
 
         Returns:
             Content: The Content object created from the document.

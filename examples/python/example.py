@@ -24,7 +24,8 @@ def example_using_anthropic():
 
     content = Content.from_text("Hello, Claude!")
     content2 = Content.from_text("What is color of this image?")
-    content3 = Content.from_document("examples/python/white.jpg")
+    # for Claude, you need to construct a document content with llm parameter, and give the llm model name
+    content3 = Content.from_document("examples/python/white.jpg", llm="claude-3-5-haiku-latest")
 
     # construct a message
     message = Message(content=[content, content2, content3])
@@ -60,12 +61,11 @@ def example_using_openai():
 
     content = Content.from_text("Hello, OpenAI!")
     content2 = Content.from_text("What does this document say?")
-    # for OpenAI, you need to construct a document content with llm parameter
-    # And for know, it is only possible to process pdf files
-    content3 = Content.from_document("examples/python/test.pdf", llm="gpt-4.1-nano-2025-04-14")
+    # for know, it is only possible to process pdf files
+    content3 = Content.from_document("examples/python/test.pdf")
 
     message = Message(content=[content, content2, content3])
-    request = OpenAIRequest(model="gpt-4.1-nano-2025-04-14", messages=[message],
+    request = OpenAIRequest(model="gpt-4.1-nano", messages=[message],
                             # no max_tokens option for OpenAI
                             prompt="Please answer in Chinese",  # optional
                             endpoint=f"https://{os.getenv('AZURE_RESOURCE_NAME')}.openai.azure.com/openai/v1/responses?api-version=preview"
