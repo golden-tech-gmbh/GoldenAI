@@ -130,16 +130,20 @@ impl DocumentContent {
                 )),
             },
             None => {
-                // default using Claude
+                // default using OpenAI
                 Ok(Self {
-                    content_type: content_type.to_string(),
-                    source: Some(DocumentSourceContent {
-                        content_type: "base64".to_string(),
-                        media_type: media_type.to_string(),
-                        data: data.to_string(),
-                    }),
-                    file_data: None,
-                    filename: None,
+                    content_type: {
+                        if content_type == "document" {
+                            "input_file".to_string()
+                        } else if content_type == "image" {
+                            "input_image".to_string()
+                        } else {
+                            content_type.to_string()
+                        }
+                    },
+                    source: None,
+                    file_data: Some(format!("data:{};base64,{}", media_type, data.to_string())),
+                    filename: Some(file_name),
                 })
             }
         }
@@ -236,7 +240,8 @@ impl Content {
     #[pyo3(signature = (path, llm=None))]
     fn from_document<'p>(_cls: Bound<'p, PyType>, path: &str, llm: Option<&str>) -> PyResult<Self> {
         let _llm = Some(match llm {
-            None => SupportedModels::Claude35HaikuLatest,
+            // default document llm is GPT41Nano
+            None => SupportedModels::GPT41Nano,
             _ => SupportedModels::from_str(llm.unwrap()).unwrap(),
         });
         Ok(Self {
