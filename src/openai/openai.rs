@@ -82,8 +82,8 @@ fn count_tokens_openai(request_body: OpenAIRequest) -> Result<u32> {
                 .iter()
                 .map(|content| match &content.ctx {
                     ContentTypeInner::Text(text) => Some(text.text.clone()),
-                    ContentTypeInner::Document(document) => {
-                        Some(document.clone().file_data.unwrap())
+                    ContentTypeInner::Document(_document) => {
+                        Some("".to_string()) // Document (PDF) is having problem calculate correct token
                     }
                 })
                 .collect(),
