@@ -95,6 +95,19 @@ impl OpenAIRequest {
         Ok(())
     }
 
+    pub fn add_response_from_str(&mut self, response: String) -> PyResult<()> {
+        self.input.push(Message {
+            role: "assistant".to_string(),
+            content: vec![Content {
+                ctx: ContentTypeInner::Text(TextContent {
+                    content_type: "output_text".to_string(),
+                    text: response,
+                }),
+            }],
+        });
+        Ok(())
+    }
+
     pub fn add_message(&mut self, mut message: Message) {
         for content in &mut message.content {
             if let ContentTypeInner::Text(ref mut text_content) = content.ctx {
