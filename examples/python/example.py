@@ -61,7 +61,7 @@ def example_using_openai():
 
     content = Content.from_text("Hello, OpenAI!")
     content2 = Content.from_text("What does this document say?")
-    # for know, it is only possible to process pdf files
+    # for now, it is only possible to process pdf files
     content3 = Content.from_document("examples/python/test.pdf")
 
     message = Message(content=[content, content2, content3])
@@ -83,6 +83,40 @@ def example_using_openai():
     message2 = Message(content=[content2])
     request.add_message(message2)
     res2: LLMResponse = send(request_body=request)
+    print(res2)
+
+
+def example_using_openai_with_model():
+    from goldenai import Content, Message, OpenAIRequest, send_with_model, LLMResponse
+    from pydantic import BaseModel
+
+    class Test(BaseModel):
+        pdf_content: str
+
+    content = Content.from_text("Hello, OpenAI!")
+    content2 = Content.from_text("What does this document say?")
+    content3 = Content.from_document("examples/python/test.pdf")
+
+    message = Message(content=[content, content2, content3])
+    request = OpenAIRequest(model="gpt-4.1-nano", messages=[message],
+                            # no max_tokens option for OpenAI
+                            prompt="Please answer in Chinese",  # optional
+                            # endpoint=f"https://{os.getenv('AZURE_RESOURCE_NAME')}.openai.azure.com/openai/v1/responses?api-version=preview"
+                            # optional, here is an example using model provided by Azure, NOTE: only support 'responses' endpoint
+                            )
+
+    res = send_with_model(request, Test)
+
+    print(res)
+    print(res.cost())
+
+    # if you use send_with_model method to obtain a response, please make sure you will append
+    # the response using add_response_from_str method
+    request.add_response_from_str(str(res))
+    content2 = Content.from_text("Please answer again in English")
+    message2 = Message(content=[content2])
+    request.add_message(message2)
+    res2: LLMResponse = send_with_model(request_body=request, model=Test)
     print(res2)
 
 
@@ -120,5 +154,6 @@ def example_chat_ollama():
 if __name__ == "__main__":
     example_using_anthropic()
     example_using_openai()
+    example_using_openai_with_model()
     # example_using_ollama()
     # example_chat_ollama()
