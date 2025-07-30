@@ -11,13 +11,18 @@ classifiers = [
     "Programming Language :: Python :: Implementation :: PyPy",
 ]
 dynamic = ["version"]
+dependencies = [
+    "openai",
+    "pydantic",
+]
+
 [tool.maturin]
 features = ["pyo3/extension-module"]
 
 [dependency-groups]
 dev = [
-    "maturin>=1.8.6",
+    "maturin>=1.9.2",
     "black>=25.1.0",
-    "ruff>=0.11.10",
+    "ruff>=0.12.7",
     "isort>=5.12.0",
 ]
