@@ -1,4 +1,7 @@
 from typing import List, Type, Dict
+from pydantic import BaseModel
+
+from .py.struct import GoldenAIParsedResponse
 
 
 class DocumentSourceContent:
@@ -162,6 +165,13 @@ class OpenAIRequest:
 
     def __repr__(self) -> str: ...
 
+    @property
+    def model(self) -> str:
+        """
+        returns the model name
+        :return: model name
+        """
+
     def add_message(self, message: Message) -> None:
         """
         Append a message to the response that will be sent to the LLM in the chat mode.
@@ -172,6 +182,12 @@ class OpenAIRequest:
         """
         Append a response to the response that will be sent to the LLM in the chat mode.
         :param response:
+        """
+
+    def add_response_from_str(self, response: str) -> None:
+        """
+        Add a response string to the response that will be sent to the LLM in the chat mode.
+        :param response: str, the response string, can be obtained by str(response)
         """
 
 
@@ -286,4 +302,13 @@ def chat(request_body: OllamaRequest) -> LLMResponse:
     Send prepared LLM Request
     :param request_body: OllamaRequest
     :return: LLMResponse
+    """
+
+
+def send_with_model(request_body: OpenAIRequest, model: type[BaseModel]) -> "GoldenAIParsedResponse":
+    """
+    Send prepared OpenAI Request with pydantic model
+    :param request_body: OpenAIRequest
+    :param model: pydantic model you want to parse from LLM response
+    :return: GoldenAIParsedResponse
     """
