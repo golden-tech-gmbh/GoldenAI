@@ -103,6 +103,11 @@ impl OpenAIRequest {
         }
         self.input.push(message);
     }
+
+    #[getter]
+    fn model(&self) -> PyResult<String> {
+        Ok(self.model.to_str().to_string())
+    }
 }
 
 #[derive(Deserialize, Debug, Clone)]
