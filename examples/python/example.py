@@ -65,10 +65,10 @@ def example_using_openai():
     content3 = Content.from_document("examples/python/test.pdf")
 
     message = Message(content=[content, content2, content3])
-    request = OpenAIRequest(model="gpt-4.1-nano", messages=[message],
+    request = OpenAIRequest(model="gpt-5-nano", messages=[message],
                             # no max_tokens option for OpenAI
                             prompt="Please answer in Chinese",  # optional
-                            endpoint=f"https://{os.getenv('AZURE_RESOURCE_NAME')}.openai.azure.com/openai/v1/responses?api-version=preview"
+                            # endpoint=f"https://{os.getenv('AZURE_RESOURCE_NAME')}.openai.azure.com/openai/v1/responses?api-version=preview"
                             # optional, here is an example using model provided by Azure, NOTE: only support 'responses' endpoint
                             )
 
