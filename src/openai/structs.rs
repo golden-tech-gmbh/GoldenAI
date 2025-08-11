@@ -1,5 +1,7 @@
 use pyo3::prelude::*;
+use serde::de::{self, Deserializer, SeqAccess, Visitor};
 use serde::{Deserialize, Serialize};
+use std::fmt;
 
 use crate::SupportedModels;
 use crate::message::{Content, ContentTypeInner, Message, TextContent};
@@ -157,4 +159,46 @@ impl ResponseChoiceOpenAI {
             self.id, self.content, self.status
         ))
     }
+}
+
+pub fn deserialize_message_only<'de, D>(
+    deserializer: D,
+) -> Result<Option<Vec<ResponseChoiceOpenAI>>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    struct MessageOnlyVisitor;
+
+    impl<'de> Visitor<'de> for MessageOnlyVisitor {
+        type Value = Option<Vec<ResponseChoiceOpenAI>>;
+
+        fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+            formatter.write_str("a sequence of response objects")
+        }
+
+        fn visit_seq<V>(self, mut seq: V) -> Result<Option<Vec<ResponseChoiceOpenAI>>, V::Error>
+        where
+            V: SeqAccess<'de>,
+        {
+            let mut responses = Vec::new();
+
+            while let Some(value) = seq.next_element::<serde_json::Value>()? {
+                if let Some(type_field) = value.get("type") {
+                    if type_field == "message" {
+                        let response: ResponseChoiceOpenAI =
+                            serde_json::from_value(value).map_err(de::Error::custom)?;
+                        responses.push(response);
+                    }
+                }
+            }
+
+            if responses.is_empty() {
+                Ok(None)
+            } else {
+                Ok(Some(responses))
+            }
+        }
+    }
+
+    deserializer.deserialize_seq(MessageOnlyVisitor)
 }
