@@ -26,6 +26,8 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 pub enum SupportedModels {
     GPT41Nano,
     GPT41,
+    GPT5,
+    GPT5Nano,
     Claude35HaikuLatest,
     Qwen25VL,
 }
@@ -54,6 +56,8 @@ impl SupportedModels {
         match self {
             SupportedModels::GPT41Nano => "gpt-4.1-nano",
             SupportedModels::GPT41 => "gpt-4.1",
+            SupportedModels::GPT5 => "gpt-5",
+            SupportedModels::GPT5Nano => "gpt-5-nano",
             SupportedModels::Claude35HaikuLatest => "claude-3-5-haiku-latest",
             SupportedModels::Qwen25VL => "qwen2.5vl:latest",
         }
@@ -65,6 +69,10 @@ impl SupportedModels {
             "gpt-4.1-nano" => Ok(SupportedModels::GPT41Nano),
             "gpt-4.1-2025-04-14" => Ok(SupportedModels::GPT41),
             "gpt-4.1" => Ok(SupportedModels::GPT41),
+            "gpt-5" => Ok(SupportedModels::GPT5),
+            "gpt-5-2025-08-07" => Ok(SupportedModels::GPT5),
+            "gpt-5-nano" => Ok(SupportedModels::GPT5Nano),
+            "gpt-5-nano-2025-08-07" => Ok(SupportedModels::GPT5Nano),
             "claude-3-5-haiku-latest" => Ok(SupportedModels::Claude35HaikuLatest),
             "claude-3-5-haiku-20241022" => Ok(SupportedModels::Claude35HaikuLatest),
             "qwen2.5vl:latest" => Ok(SupportedModels::Qwen25VL),
@@ -123,9 +131,10 @@ fn count_tokens<'p>(request_body: Bound<'p, PyAny>) -> PyResult<u32> {
             Ok(tokens) => Ok(tokens),
             Err(e) => Err(PyException::new_err(e.to_string())),
         }
-    } else if let Ok(openai_req) = request_body.extract::<openai::structs::OpenAIRequest>() {
-        openai::openai::get_count_tokens_openai(openai_req)
-            .map_err(|e| PyException::new_err(e.to_string()))
+    } else if let Ok(_openai_req) = request_body.extract::<openai::structs::OpenAIRequest>() {
+        // openai::openai::get_count_tokens_openai(openai_req)
+        //     .map_err(|e| PyException::new_err(e.to_string()))
+        Ok(0u32) // TODO! OpenAI is having problems with counting tokens for now
     } else if let Ok(_ollama_req) = request_body.extract::<ollama::structs::OllamaRequest>() {
         Ok(0u32) // TODO! Ollama is not necessary to count tokens for now
     } else {

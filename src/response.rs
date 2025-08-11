@@ -84,6 +84,12 @@ impl LLMResponse {
         } else if self.model.to_str() == "gpt-4.1" {
             input = 1.7;
             output = 6.84;
+        } else if self.model.to_str() == "gpt-5" {
+            input = 1.25;
+            output = 10.0;
+        } else if self.model.to_str() == "gpt-5-nano" {
+            input = 0.05;
+            output = 0.4;
         } else {
             return Err(PyTypeError::new_err("Unsupported model"));
         }
