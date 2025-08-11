@@ -21,6 +21,12 @@ class GoldenAIParsedResponse(ParsedResponse):
         elif "gpt-4.1" in self.model:
             input = 1.7
             output = 6.84
+        elif "gpt-5-nano" in self.model:
+            input = 0.05
+            output = 0.4
+        elif "gpt-5" in self.model:
+            input = 1.25
+            output = 10
         else:
             raise Exception("Unsupported model: " + self.model)
 
