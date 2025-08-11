@@ -107,7 +107,7 @@ async fn test_request_openai() {
     // this will ensure the prompt is built correctly with messages
     // in Anthropic, the prompt is built alongside the messages, so this is not necessary
     let mut request_body = OpenAIRequest::new(
-        "gpt-4.1-nano-2025-04-14",
+        "gpt-5-nano",
         vec![Message {
             role: "user".to_string(),
             content: vec![
@@ -129,13 +129,14 @@ async fn test_request_openai() {
             ],
         }],
         Some("Please answer in Chinese"),
-        Some("https://goldenaifr.openai.azure.com/openai/v1/responses?api-version=preview"),
+        None,
+        // Some("https://goldenaifr.openai.azure.com/openai/v1/responses?api-version=preview"),
     );
 
-    println!(
-        "Input tokens: {}",
-        count_tokens_openai(request_body.clone()).unwrap()
-    );
+    // println!(
+    //     "Input tokens: {}",
+    //     count_tokens_openai(request_body.clone()).unwrap()
+    // );
 
     let response = request_openai(request_body.clone()).await;
     match response {
@@ -152,10 +153,10 @@ async fn test_request_openai() {
                     }),
                 }],
             });
-            println!(
-                "Input tokens 2: {}",
-                count_tokens_openai(request_body.clone()).unwrap()
-            );
+            // println!(
+            //     "Input tokens 2: {}",
+            //     count_tokens_openai(request_body.clone()).unwrap()
+            // );
             let new_response = request_openai(request_body).await;
             match new_response {
                 Ok(new_res) => {
