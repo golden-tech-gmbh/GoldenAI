@@ -4,7 +4,9 @@ use serde::Deserialize;
 
 use crate::SupportedModels;
 use crate::anthropic::structs::ResponseAnthropic;
-use crate::openai::structs::{ResponseChoiceOpenAI, deserialize_message_only};
+use crate::openai::structs::{
+    OpenAIReasoning, OpenAIResError, ResponseChoiceOpenAI, deserialize_message_only,
+};
 
 #[derive(Deserialize, Debug, Clone)]
 #[pyclass(dict, get_all, set_all)]
@@ -40,6 +42,10 @@ pub struct LLMResponse {
 
     #[serde(default, deserialize_with = "deserialize_message_only")]
     pub output: Option<Vec<ResponseChoiceOpenAI>>, // OpenAI
+    pub reasoning: Option<OpenAIReasoning>, // OpenAI
+    pub instructions: Option<String>,       // OpenAI
+    pub error: Option<OpenAIResError>,      // OpenAI
+    pub status: Option<String>,             // OpenAI
 }
 
 #[pymethods]

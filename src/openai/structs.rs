@@ -31,6 +31,7 @@ pub struct OpenAIRequest {
     #[serde(skip)]
     pub(crate) endpoint: Option<String>,
     pub(crate) reasoning: Option<OpenAIReasoning>,
+    pub(crate) max_output_tokens: Option<u32>,
 }
 
 #[pymethods]
@@ -260,4 +261,11 @@ where
     }
 
     deserializer.deserialize_seq(MessageOnlyVisitor)
+}
+
+#[derive(Deserialize, Debug, Clone)]
+#[pyclass(dict, get_all, set_all)]
+pub struct OpenAIResError {
+    pub code: Option<String>,
+    pub message: Option<String>,
 }
