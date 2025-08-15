@@ -51,6 +51,12 @@ impl<'de> Deserialize<'de> for SupportedModels {
     }
 }
 
+impl Default for SupportedModels {
+    fn default() -> Self {
+        SupportedModels::GPT5Nano
+    }
+}
+
 impl SupportedModels {
     fn to_str(&self) -> &'static str {
         match self {

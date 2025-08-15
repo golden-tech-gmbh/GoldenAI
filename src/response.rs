@@ -27,7 +27,16 @@ impl Usage {
     }
 }
 
-#[derive(Deserialize, Debug, Clone)]
+impl Default for Usage {
+    fn default() -> Self {
+        Usage {
+            input_tokens: 0,
+            output_tokens: 0,
+        }
+    }
+}
+
+#[derive(Deserialize, Debug, Clone, Default)]
 #[pyclass(dict, get_all, frozen)]
 pub struct LLMResponse {
     pub id: String,

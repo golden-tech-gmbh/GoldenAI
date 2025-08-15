@@ -153,7 +153,7 @@ impl OllamaResponse {
                 text: self.response,
             }]),
             stop_reason: Some(self.done_reason),
-            output: None,
+            ..Default::default()
         }
     }
 }
@@ -228,7 +228,7 @@ impl OllamaChatResponse {
                 text: self.message.content,
             }]),
             stop_reason: Some(self.done_reason),
-            output: None,
+            ..Default::default()
         }
     }
 }

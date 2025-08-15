@@ -6,7 +6,7 @@ use serde::de::{self, Deserializer, SeqAccess, Visitor};
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
-#[derive(Serialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 #[pyclass(dict, get_all, set_all, subclass)]
 pub struct OpenAIReasoning {
     pub(crate) effort: Option<String>,
@@ -22,7 +22,7 @@ impl Default for OpenAIReasoning {
     }
 }
 
-#[derive(Serialize, Clone, Debug)]
+#[derive(Serialize, Clone, Debug, Default)]
 #[pyclass(dict, get_all, set_all, subclass)]
 pub struct OpenAIRequest {
     pub(crate) model: SupportedModels,
@@ -68,6 +68,7 @@ impl OpenAIRequest {
                     None
                 }
             },
+            ..Default::default()
         }
     }
 
