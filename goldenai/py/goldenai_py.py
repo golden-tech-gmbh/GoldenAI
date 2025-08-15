@@ -2,14 +2,12 @@ import os
 
 from typing import List, Dict, TYPE_CHECKING
 
-from openai import *
+from openai import OpenAI, AzureOpenAI
+from openai.types import Reasoning
 from pydantic import BaseModel
 
 from .struct import GoldenAIParsedResponse
 from ..goldenai import OpenAIRequest
-
-if TYPE_CHECKING:
-    from openai.types.responses import ParsedResponse
 
 
 def send_with_model(request_body: OpenAIRequest, model: type[BaseModel]) -> "GoldenAIParsedResponse":
@@ -44,6 +42,7 @@ def send_with_model(request_body: OpenAIRequest, model: type[BaseModel]) -> "Gol
         model=request_body.model,
         input=input,
         text_format=model,
+        reasoning=reasoning if "gpt-5" in request_body.model else None,
     )
 
     goldenai_response: "GoldenAIParsedResponse" = GoldenAIParsedResponse.from_parsed_response(response)
