@@ -53,7 +53,7 @@ impl<'de> Deserialize<'de> for SupportedModels {
 
 impl Default for SupportedModels {
     fn default() -> Self {
-        SupportedModels::GPT5Nano
+        SupportedModels::GPT41Nano
     }
 }
 
