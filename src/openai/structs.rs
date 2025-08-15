@@ -3,9 +3,21 @@ use serde::de::{self, Deserializer, SeqAccess, Visitor};
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
-use crate::SupportedModels;
-use crate::message::{Content, ContentTypeInner, Message, TextContent};
-use crate::response::LLMResponse;
+#[derive(Serialize, Clone, Debug)]
+#[pyclass(dict, get_all, set_all, subclass)]
+pub struct OpenAIReasoning {
+    pub(crate) effort: Option<String>,
+    pub(crate) summary: Option<String>,
+}
+
+impl Default for OpenAIReasoning {
+    fn default() -> Self {
+        Self {
+            effort: Some("low".to_string()),
+            summary: None,
+        }
+    }
+}
 
 #[derive(Serialize, Clone, Debug)]
 #[pyclass(dict, get_all, set_all, subclass)]
@@ -16,6 +28,7 @@ pub struct OpenAIRequest {
     pub(crate) system: Option<String>,
     #[serde(skip)]
     pub(crate) endpoint: Option<String>,
+    pub(crate) reasoning: OpenAIReasoning,
 }
 
 #[pymethods]
@@ -61,6 +74,7 @@ impl OpenAIRequest {
             },
             system: None,
             endpoint: endpoint.map(|s| s.to_string()),
+            reasoning: OpenAIReasoning::default(),
         }
     }
 
