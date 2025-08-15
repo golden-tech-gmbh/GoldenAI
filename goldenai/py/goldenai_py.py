@@ -36,6 +36,8 @@ def send_with_model(request_body: OpenAIRequest, model: type[BaseModel]) -> "Gol
         model=request_body.model,
         input=inputs,
         text_format=model,
+        instructions=request_body.instructions,
+        max_output_tokens=request_body.max_output_tokens,
         reasoning=reasoning if "gpt-5" in request_body.model else None,
     )
 
