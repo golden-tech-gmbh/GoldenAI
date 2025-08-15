@@ -31,7 +31,7 @@ pub struct OpenAIRequest {
     pub(crate) system: Option<String>,
     #[serde(skip)]
     pub(crate) endpoint: Option<String>,
-    pub(crate) reasoning: OpenAIReasoning,
+    pub(crate) reasoning: Option<OpenAIReasoning>,
 }
 
 #[pymethods]
@@ -77,7 +77,13 @@ impl OpenAIRequest {
             },
             system: None,
             endpoint: endpoint.map(|s| s.to_string()),
-            reasoning: OpenAIReasoning::default(),
+            reasoning: {
+                if model.contains("gpt-5") {
+                    Some(OpenAIReasoning::default())
+                } else {
+                    None
+                }
+            },
         }
     }
 
