@@ -1,3 +1,6 @@
+use crate::SupportedModels;
+use crate::message::{Content, ContentTypeInner, Message, TextContent};
+use crate::response::LLMResponse;
 use pyo3::prelude::*;
 use serde::de::{self, Deserializer, SeqAccess, Visitor};
 use serde::{Deserialize, Serialize};
@@ -136,6 +139,58 @@ impl OpenAIRequest {
     #[getter]
     fn model(&self) -> PyResult<String> {
         Ok(self.model.to_str().to_string())
+    }
+
+    fn msg_to_list_hashmap(&self) -> PyResult<Vec<std::collections::HashMap<String, String>>> {
+        use crate::message::ContentTypeInner;
+        use std::collections::HashMap;
+
+        let mut result = Vec::new();
+
+        for message in &self.input {
+            for content in &message.content {
+                match &content.ctx {
+                    ContentTypeInner::Text(text_content) => {
+                        if text_content.content_type == "input_text"
+                            || text_content.content_type == "output_text"
+                        {
+                            let mut map = HashMap::new();
+                            map.insert("role".to_string(), message.role.clone());
+                            map.insert(
+                                "content_type".to_string(),
+                                text_content.content_type.clone(),
+                            );
+                            map.insert("text".to_string(), text_content.text.clone());
+                            result.push(map);
+                        }
+                    }
+                    ContentTypeInner::Document(doc_content) => {
+                        if doc_content.content_type == "input_file" {
+                            let mut map = HashMap::new();
+                            map.insert("role".to_string(), message.role.clone());
+                            map.insert(
+                                "content_type".to_string(),
+                                doc_content.content_type.clone(),
+                            );
+                            if let Some(file_data) = &doc_content.file_data {
+                                map.insert("file_data".to_string(), file_data.clone());
+                            }
+                            if let Some(filename) = &doc_content.filename {
+                                map.insert("filename".to_string(), filename.clone());
+                            }
+                            result.push(map);
+                        } else {
+                            return Err(pyo3::exceptions::PyValueError::new_err(format!(
+                                "Unsupported content type: {}",
+                                doc_content.content_type
+                            )));
+                        }
+                    }
+                }
+            }
+        }
+
+        Ok(result)
     }
 }
 
