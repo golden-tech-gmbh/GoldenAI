@@ -27,8 +27,7 @@ impl Default for OpenAIReasoning {
 pub struct OpenAIRequest {
     pub(crate) model: SupportedModels,
     pub(crate) input: Vec<Message>,
-    #[serde(skip)]
-    pub(crate) system: Option<String>,
+    pub(crate) instructions: Option<String>,
     #[serde(skip)]
     pub(crate) endpoint: Option<String>,
     pub(crate) reasoning: Option<OpenAIReasoning>,
@@ -58,24 +57,8 @@ impl OpenAIRequest {
 
         Self {
             model: SupportedModels::from_str(model).unwrap(),
-            input: match prompt {
-                Some(p) => {
-                    let mut new_messages = Vec::new();
-                    new_messages.push(Message {
-                        role: "developer".to_string(),
-                        content: vec![Content {
-                            ctx: ContentTypeInner::Text(TextContent {
-                                content_type: "input_text".to_string(),
-                                text: p.to_string(),
-                            }),
-                        }],
-                    });
-                    new_messages.extend(modified_messages);
-                    new_messages
-                }
-                None => modified_messages,
-            },
-            system: None,
+            input: modified_messages,
+            instructions: prompt.map(|s| s.to_string()),
             endpoint: endpoint.map(|s| s.to_string()),
             reasoning: {
                 if model.contains("gpt-5") {
