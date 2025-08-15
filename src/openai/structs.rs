@@ -175,6 +175,7 @@ impl ResponseChoiceOpenAI {
     }
 }
 
+// Custom deserializer for OpenAI response that only extracts messages response and not reasoning
 pub fn deserialize_message_only<'de, D>(
     deserializer: D,
 ) -> Result<Option<Vec<ResponseChoiceOpenAI>>, D::Error>
