@@ -31,7 +31,7 @@ pub struct OpenAIRequest {
     pub(crate) input: Vec<Message>,
     pub(crate) instructions: Option<String>,
     #[serde(skip)]
-    pub(crate) endpoint: Option<String>,
+    pub(crate) endpoint: String,
     pub(crate) reasoning: Option<OpenAIReasoning>,
     pub(crate) max_output_tokens: Option<u32>,
 }
@@ -39,12 +39,13 @@ pub struct OpenAIRequest {
 #[pymethods]
 impl OpenAIRequest {
     #[new]
-    #[pyo3(signature = (model,messages,prompt=None,endpoint=None))]
+    #[pyo3(signature = (model,messages,prompt=None,endpoint=None,max_output_tokens=None))]
     pub fn new(
         model: &str,
         messages: Vec<Message>,
         prompt: Option<&str>,
         endpoint: Option<&str>,
+        max_output_tokens: Option<u32>,
     ) -> Self {
         let modified_messages = messages
             .into_iter()
@@ -59,10 +60,19 @@ impl OpenAIRequest {
             .collect::<Vec<Message>>();
 
         Self {
-            model: SupportedModels::from_str(model).unwrap(),
+            model: SupportedModels::from_str(model).unwrap_or_else(|e| {
+                eprintln!(
+                    "{}, using default model: {}",
+                    e,
+                    SupportedModels::default().to_str()
+                );
+                SupportedModels::default()
+            }),
             input: modified_messages,
             instructions: prompt.map(|s| s.to_string()),
-            endpoint: endpoint.map(|s| s.to_string()),
+            endpoint: endpoint
+                .map(|s| s.to_string())
+                .unwrap_or("https://api.openai.com/v1/responses".to_string()),
             reasoning: {
                 if model.contains("gpt-5") {
                     Some(OpenAIReasoning::default())
@@ -70,7 +80,7 @@ impl OpenAIRequest {
                     None
                 }
             },
-            ..Default::default()
+            max_output_tokens,
         }
     }
 
