@@ -17,10 +17,7 @@ pub fn get_count_tokens_openai(request_body: OpenAIRequest) -> Result<u32> {
 }
 
 async fn request_openai(request_body: OpenAIRequest) -> Result<LLMResponse> {
-    let endpoint = match &request_body.endpoint {
-        Some(endpoint) => endpoint.clone(),
-        None => "https://api.openai.com/v1/responses".to_string(),
-    };
+    let endpoint = &request_body.endpoint;
 
     let api_key = {
         if endpoint.contains("azure") {
@@ -128,9 +125,10 @@ async fn test_request_openai() {
                 },
             ],
         }],
-        Some("Please answer in Chinese"),
-        None,
-        // Some("https://goldenaifr.openai.azure.com/openai/v1/responses?api-version=preview"),
+        Some("Please answer in Chinese"), // prompt (instructions)
+        // None, // endpoint
+        Some("https://goldenaifr.openai.azure.com/openai/v1/responses?api-version=preview"), // endpoint
+        None, // max_output_tokens
     );
 
     // println!(

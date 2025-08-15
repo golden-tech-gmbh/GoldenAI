@@ -142,13 +142,15 @@ class OpenAIRequest:
     messages: List[Message]
     prompt: str | None
     endpoint: str | None
+    max_output_tokens: str | None
 
     def __init__(
             self,
             model: str,
             messages: List[Message],
             prompt: str | None = None,
-            endpoint: str | None = None
+            endpoint: str | None = None,
+            max_output_tokens: str | None = None
     ) -> None:
         """
         Initialize an OpenAIRequest object.
@@ -156,10 +158,12 @@ class OpenAIRequest:
         Args:
             model (str): The name of the AI model to use.
             messages (List[Message]): The conversation history.
-            prompt (str | None, optional): The initial prompt for the AI model.
+            prompt (str | None, optional): The initial prompt for the AI model (instructions in OpenAI).
                 Defaults to None.
             endpoint (str | None, optional): The endpoint to use for the OpenAI API.
                 Defaults to None, which uses the default OpenAI endpoint.
+            max_output_tokens (str | None, optional): The maximum number of output tokens.
+                Defaults to None, which uses the default OpenAI setting.
         """
         ...
 
