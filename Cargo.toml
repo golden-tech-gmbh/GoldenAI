@@ -21,6 +21,7 @@ anyhow = "1.0.99"
 openssl = { version = "0.10.73", features = ["vendored"] }
 tiktoken-rs = "0.7.0"
 base64 = "0.22.1"
+pythonize = "0.25.0"
 
 [features]
 extension-module = ["pyo3/extension-module"]

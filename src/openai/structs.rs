@@ -1,7 +1,9 @@
 use crate::SupportedModels;
 use crate::message::{Content, ContentTypeInner, Message, TextContent};
 use crate::response::LLMResponse;
+use pyo3::IntoPyObjectExt;
 use pyo3::prelude::*;
+use pythonize::pythonize;
 use serde::de::{self, Deserializer, SeqAccess, Visitor};
 use serde::{Deserialize, Serialize};
 use std::fmt;
@@ -132,11 +134,12 @@ impl OpenAIRequest {
         Ok(self.model.to_str().to_string())
     }
 
-    fn msg_to_list_hashmap(&self) -> PyResult<Vec<std::collections::HashMap<String, String>>> {
+    fn msg_to_list_hashmap(&self, py: Python) -> PyResult<Py<PyAny>> {
         use crate::message::ContentTypeInner;
+        use serde_json::{Value, json};
         use std::collections::HashMap;
 
-        let mut result = Vec::new();
+        let mut result: Vec<HashMap<String, Value>> = Vec::new();
 
         for message in &self.input {
             for content in &message.content {
@@ -145,30 +148,30 @@ impl OpenAIRequest {
                         if text_content.content_type == "input_text"
                             || text_content.content_type == "output_text"
                         {
-                            let mut map = HashMap::new();
-                            map.insert("role".to_string(), message.role.clone());
+                            let mut map: HashMap<String, Value> = HashMap::new();
+                            map.insert("role".to_string(), Value::String(message.role.clone()));
                             map.insert(
-                                "content_type".to_string(),
-                                text_content.content_type.clone(),
+                                "content".to_string(),
+                                json!([{
+                                    "type": text_content.content_type,
+                                    "text": text_content.text
+                                }]),
                             );
-                            map.insert("text".to_string(), text_content.text.clone());
                             result.push(map);
                         }
                     }
                     ContentTypeInner::Document(doc_content) => {
                         if doc_content.content_type == "input_file" {
-                            let mut map = HashMap::new();
-                            map.insert("role".to_string(), message.role.clone());
+                            let mut map: HashMap<String, Value> = HashMap::new();
+                            map.insert("role".to_string(), Value::String(message.role.clone()));
                             map.insert(
-                                "content_type".to_string(),
-                                doc_content.content_type.clone(),
+                                "content".to_string(),
+                                json!([{
+                                    "type": doc_content.content_type,
+                                    "file_data": doc_content.file_data.clone(),
+                                    "filename": doc_content.filename.clone()
+                                }]),
                             );
-                            if let Some(file_data) = &doc_content.file_data {
-                                map.insert("file_data".to_string(), file_data.clone());
-                            }
-                            if let Some(filename) = &doc_content.filename {
-                                map.insert("filename".to_string(), filename.clone());
-                            }
                             result.push(map);
                         } else {
                             return Err(pyo3::exceptions::PyValueError::new_err(format!(
@@ -181,7 +184,7 @@ impl OpenAIRequest {
             }
         }
 
-        Ok(result)
+        pythonize(py, &result)?.into_py_any(py)
     }
 }
 
