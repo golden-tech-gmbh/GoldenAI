@@ -4,6 +4,7 @@ from typing import List, Dict, TYPE_CHECKING
 
 from openai import OpenAI, AzureOpenAI
 from openai.types import Reasoning
+from openai.types.responses import ParsedResponse
 from pydantic import BaseModel
 
 from .struct import GoldenAIParsedResponse
@@ -11,10 +12,20 @@ from ..goldenai import OpenAIRequest
 
 
 def send_with_model(request_body: OpenAIRequest, model: type[BaseModel]) -> "GoldenAIParsedResponse":
-    client: "OpenAI" = OpenAI(
-        api_key=os.getenv("OPENAI_API_KEY"),
-        base_url=request_body.endpoint,
-    )
+    client = None
+    if request_body.endpoint:
+        if "azure" in request_body.endpoint:
+            client: "AzureOpenAI" = AzureOpenAI(
+                api_version="2025-03-01-preview",
+                azure_endpoint=request_body.endpoint,
+                api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+            )
+    if not client:
+        client: "OpenAI" = OpenAI(
+            api_key=os.getenv("OPENAI_API_KEY"),
+            base_url=request_body.endpoint,
+        )
+
     input: List[Dict] = []
     for each_message in request_body.input:
         for each_content in each_message.content:
