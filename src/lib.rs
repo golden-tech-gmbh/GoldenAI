@@ -25,8 +25,10 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 #[derive(PartialEq, Clone, Debug)]
 pub enum SupportedModels {
     GPT41Nano,
+    GPT41Mini,
     GPT41,
     GPT5,
+    GPT5Mini,
     GPT5Nano,
     Claude35HaikuLatest,
     Qwen25VL,
@@ -61,8 +63,10 @@ impl SupportedModels {
     fn to_str(&self) -> &'static str {
         match self {
             SupportedModels::GPT41Nano => "gpt-4.1-nano",
+            SupportedModels::GPT41Mini => "gpt-4.1-mini",
             SupportedModels::GPT41 => "gpt-4.1",
             SupportedModels::GPT5 => "gpt-5",
+            SupportedModels::GPT5Mini => "gpt-5-mini",
             SupportedModels::GPT5Nano => "gpt-5-nano",
             SupportedModels::Claude35HaikuLatest => "claude-3-5-haiku-latest",
             SupportedModels::Qwen25VL => "qwen2.5vl:latest",
@@ -73,10 +77,14 @@ impl SupportedModels {
         match model {
             "gpt-4.1-nano-2025-04-14" => Ok(SupportedModels::GPT41Nano),
             "gpt-4.1-nano" => Ok(SupportedModels::GPT41Nano),
+            "gpt-4.1-mini-2025-04-14" => Ok(SupportedModels::GPT41Mini),
+            "gpt-4.1-mini" => Ok(SupportedModels::GPT41Mini),
             "gpt-4.1-2025-04-14" => Ok(SupportedModels::GPT41),
             "gpt-4.1" => Ok(SupportedModels::GPT41),
             "gpt-5" => Ok(SupportedModels::GPT5),
             "gpt-5-2025-08-07" => Ok(SupportedModels::GPT5),
+            "gpt-5-mini" => Ok(SupportedModels::GPT5Mini),
+            "gpt-5-mini-2025-08-07" => Ok(SupportedModels::GPT5Mini),
             "gpt-5-nano" => Ok(SupportedModels::GPT5Nano),
             "gpt-5-nano-2025-08-07" => Ok(SupportedModels::GPT5Nano),
             "claude-3-5-haiku-latest" => Ok(SupportedModels::Claude35HaikuLatest),
