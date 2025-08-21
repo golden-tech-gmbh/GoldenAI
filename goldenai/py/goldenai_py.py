@@ -23,7 +23,7 @@ def send_with_model(request_body: OpenAIRequest, model: type[BaseModel]) -> "Gol
     if not client:
         client: "OpenAI" = OpenAI(
             api_key=os.getenv("OPENAI_API_KEY"),
-            base_url=request_body.endpoint,
+            # base_url=request_body.endpoint,
         )
 
     inputs: List[Dict] = request_body.msg_to_list_hashmap()
