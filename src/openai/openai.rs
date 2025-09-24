@@ -17,19 +17,22 @@ pub fn get_count_tokens_openai(request_body: OpenAIRequest) -> Result<u32> {
 }
 
 async fn request_openai(request_body: OpenAIRequest) -> Result<LLMResponse> {
-    let endpoint = &request_body.endpoint;
-
-    let api_key = {
-        if endpoint.contains("azure") {
-            env::var("AZURE_OPENAI_API_KEY").unwrap_or("".to_string())
-        } else {
-            env::var("OPENAI_API_KEY").unwrap_or("".to_string())
+    let endpoint = match &request_body.endpoint {
+        Some(url) => url.clone(),
+        None => {
+            // use OpenAI API by default
+            crate::OPENAI_API_URL.to_string()
         }
     };
 
-    if api_key.is_empty() {
-        return Err(anyhow!("OpenAI API key must be set"));
-    }
+    let api_key = match if endpoint.contains("azure") {
+        env::var("AZURE_OPENAI_API_KEY")
+    } else {
+        env::var("OPENAI_API_KEY")
+    } {
+        Ok(key) => key,
+        Err(_) => return Err(anyhow!("OpenAI API key must be set")),
+    };
 
     // For debugging (review the request body)
     // let json_string = serde_json::to_string_pretty(&request_body)
@@ -127,7 +130,7 @@ async fn test_request_openai() {
         }],
         Some("Please answer in Chinese"), // prompt (instructions)
         // None, // endpoint
-        Some("https://goldenaifr.openai.azure.com/openai/v1/responses?api-version=preview"), // endpoint
+        Some("https://guang-meb38l00-swedencentral.cognitiveservices.azure.com"), // endpoint
         None, // max_output_tokens
     );
 

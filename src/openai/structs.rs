@@ -31,7 +31,7 @@ pub struct OpenAIRequest {
     pub(crate) input: Vec<Message>,
     pub(crate) instructions: Option<String>,
     #[serde(skip)]
-    pub(crate) endpoint: String,
+    pub(crate) endpoint: Option<String>,
     pub(crate) reasoning: Option<OpenAIReasoning>,
     pub(crate) max_output_tokens: Option<u32>,
 }
@@ -70,9 +70,7 @@ impl OpenAIRequest {
             }),
             input: modified_messages,
             instructions: prompt.map(|s| s.to_string()),
-            endpoint: endpoint
-                .map(|s| s.to_string())
-                .unwrap_or("https://api.openai.com/v1/responses".to_string()),
+            endpoint: endpoint.map(|s| s.to_string()),
             reasoning: {
                 if model.contains("gpt-5") {
                     Some(OpenAIReasoning::default())
