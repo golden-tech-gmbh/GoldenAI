@@ -21,6 +21,9 @@ use pyo3::exceptions::PyException;
 use pyo3::prelude::*;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
+const OPENAI_API_URL: &str = "https://api.openai.com/v1/responses";
+const ANTHROPIC_API_URL: &str = "https://api.anthropic.com/v1/messages";
+
 #[pyclass(eq, eq_int)]
 #[derive(PartialEq, Clone, Debug)]
 pub enum SupportedModels {

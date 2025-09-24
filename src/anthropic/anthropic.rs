@@ -3,6 +3,7 @@ use reqwest;
 use serde::{Deserialize, Serialize};
 use std::env;
 
+use crate::ANTHROPIC_API_URL;
 use crate::SupportedModels;
 use crate::anthropic::structs::AnthropicRequest;
 use crate::message::Message;
@@ -28,7 +29,7 @@ async fn request_anthropic(request_body: AnthropicRequest) -> Result<LLMResponse
 
     let client = reqwest::Client::new();
     let response = client
-        .post("https://api.anthropic.com/v1/messages")
+        .post(ANTHROPIC_API_URL)
         .header("x-api-key", api_key)
         .header("anthropic-version", "2023-06-01")
         .header("content-type", "application/json")
@@ -69,7 +70,7 @@ async fn count_tokens_anthropic(request_body: AnthropicRequest) -> Result<u32> {
 
     let client = reqwest::Client::new();
     let response = client
-        .post("https://api.anthropic.com/v1/messages/count_tokens")
+        .post(format!("{}/count_tokens", ANTHROPIC_API_URL))
         .header("x-api-key", api_key)
         .header("anthropic-version", "2023-06-01")
         .header("content-type", "application/json")
