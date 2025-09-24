@@ -87,6 +87,7 @@ def example_using_openai():
 
 
 def example_using_openai_with_model():
+    import os
     from goldenai import Content, Message, OpenAIRequest, send_with_model, LLMResponse
     from pydantic import BaseModel
 
